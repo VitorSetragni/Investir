@@ -35,7 +35,10 @@ void main() {
     expect(find.text('Entrar para importar'), findsNothing);
     await tester.enterText(find.byType(TextField).first, 'B3SA3');
     await tester.pumpAndSettle();
-    expect(find.text('B3SA3'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate((widget) => widget is Text && widget.data == 'B3SA3'),
+      findsOneWidget,
+    );
     expect(find.text('1 ativos nesta seleção'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

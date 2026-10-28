@@ -345,9 +345,13 @@ class _HomeState extends State<Home> {
           children: [
             Icon(Icons.stacked_line_chart, color: mint, size: 30),
             SizedBox(width: 10),
-            Text(
-              'investir',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 24),
+            Expanded(
+              child: Text(
+                'investir',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 24),
+              ),
             ),
           ],
         ),
@@ -414,19 +418,29 @@ class _HomeState extends State<Home> {
     padding: EdgeInsets.fromLTRB(wide ? 32 : 18, 18, wide ? 32 : 14, 12),
     child: Row(
       children: [
-        if (!wide) ...[
-          const Icon(Icons.stacked_line_chart, color: mint),
-          const SizedBox(width: 8),
-          const Text(
-            'investir',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-          ),
-        ] else
-          const Text(
-            'Carteira de pesquisa',
-            style: TextStyle(color: muted, fontSize: 13),
-          ),
-        const Spacer(),
+        Expanded(
+          child: wide
+              ? const Text(
+                  'Carteira de pesquisa',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: muted, fontSize: 13),
+                )
+              : const Row(
+                  children: [
+                    Icon(Icons.stacked_line_chart, color: mint),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'investir',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                      ),
+                    ),
+                  ],
+                ),
+        ),
         IconButton(
           tooltip: 'Atualizar base',
           onPressed: loading ? null : load,
@@ -930,7 +944,7 @@ Widget tag(IconData icon, String label, {Color color = muted}) => Container(
     children: [
       Icon(icon, color: color, size: 16),
       const SizedBox(width: 8),
-      Text(label, style: TextStyle(color: color, fontSize: 12)),
+      Flexible(child: Text(label, style: TextStyle(color: color, fontSize: 12))),
     ],
   ),
 );
