@@ -1,10 +1,12 @@
 # Instalar os aplicativos
 
+Versão **1.1.0 (build 2)**. O botão de aparência alterna o tema e lembra sua escolha.
+
 Os instaladores são gerados pelo GitHub Actions e disponibilizados como arquivos para download. Não há publicação automática em Releases nem permissão de escrita adicional na CI.
 
 - Android atual: instale `Investir-Android-arm64.apk`.
 - Mac: extraia `Investir-macOS.zip` e mova `Investir.app` para Aplicativos.
-- O servidor padrão é `https://investir-api.onrender.com` e pode ser alterado em **Servidor**.
+- O servidor padrão é `https://investir-api.onrender.com` e já vem configurado no aplicativo.
 
 O servidor padrão já está operacional e conectado ao Supabase, com 374 ações e 355 FIIs da base de outubro/2026. A consulta pública funciona sem login. Para importar planilhas, crie a conta Auth autorizada conforme [SUPABASE_PRONTO.md](SUPABASE_PRONTO.md).
 

@@ -1,6 +1,6 @@
 # Especificação das regras
 
-Fontes: aulas 4.2 (Sociedade), 4.3 (Lucro), 4.4 (Negócio), 5.2 (Ativo), 5.3 (Imóveis), 5.4 (Gestão), “Tabela fundamentos FIIs” e “Ranking melhores ADMs FIIs” do ZIP fornecido. Não são reproduzidos os PDFs com seus dados pessoais.
+Os critérios estão organizados em Sociedade, Lucro e negócio, FIIs de tijolo, FIIs de papel e Gestão e taxas. Os valores e o ranking adotados na triagem permanecem preservados. O glossário do aplicativo explica os termos em Aprenda um pouco mais.
 
 ## Estados de cada regra
 
@@ -32,13 +32,13 @@ Classificação geral: qualquer reprovação coloca o ativo fora dos filtros; se
 | Margens EBIT e líquida | ≥4% | — | Abaixo fora do filtro |
 | Setor | Sem exposição identificada a commodities | — | Setores amplos de materiais básicos/petróleo exigem análise do subsetor |
 
-O material chama os limites de eficiência, escala e margem de **ideais/filtros**; eles são usados como cortes da seleção quantitativa, sem a afirmação de que descumpri-los prova que a empresa é ruim. “Cerca de 10%” foi operacionalizado como ≥10% para ser reproduzível.
+Os limites de eficiência, escala e margem são usados como cortes da seleção quantitativa, sem a afirmação de que descumpri-los prova que a empresa é ruim. “Cerca de 10%” foi operacionalizado como ≥10% para ser reproduzível.
 
 **Histórico não é apenas contagem:** a planilha não contém lucros anuais. O app sinaliza essa limitação e permite uma conferência documental por base. As correções conhecidas da análise de outubro/2026 se aplicam somente àquela competência: CEAB3 e MILS3 têm cinco anos completos positivos após prejuízo em 2020; VULC3 tem dez após prejuízo em 2015; JHSF3 tem oito após prejuízo em 2017. Em competências futuras, a nova planilha deve ser novamente conferida. CPFE3 permanece com ressalva de controle estatal indireto pela State Grid.
 
 Fontes de conferência histórica: [C&A](https://www.dadosdemercado.com.br/acoes/ceab3), [Mills](https://www.dadosdemercado.com.br/acoes/mils3), [Vulcabras](https://www.dadosdemercado.com.br/acoes/vulc3), [JHSF](https://www.dadosdemercado.com.br/acoes/jhsf3). Controle CPFL: [site institucional](https://grupocpfl.com.br/institucional/state-grid). Esses registros não são uma atualização automática dos resultados futuros.
 
-**DY e CAGR não são somados:** as escalas da coluna “Soma Div. + CAGR” da planilha não são confiáveis. O app não usa essa coluna para ordenar ou estimar retorno. DY/CAGR não são critérios de exclusão definidos nessas aulas.
+**DY e CAGR não são somados:** as escalas da coluna “Soma Div. + CAGR” da planilha não são confiáveis. O app não usa essa coluna para ordenar ou estimar retorno. DY/CAGR não são critérios de exclusão desta triagem.
 
 ## FIIs
 
@@ -54,7 +54,7 @@ Fontes de conferência histórica: [C&A](https://www.dadosdemercado.com.br/acoes
 | PL | ≥R$ 300 milhões | Abaixo, sem veto automático | — |
 | Número de negócios | Referência 7 mil/dia | — | Não verificável pela coluna de volume em R$ |
 
-O curso prioriza a vacância financeira quando disponível. A planilha não identifica o tipo de vacância, e isso aparece no detalhe. Imóveis, inquilinos e vacância não se aplicam aos FIIs de papel.
+A vacância financeira é priorizada quando disponível. A planilha não identifica o tipo de vacância, e isso aparece no detalhe. Imóveis, inquilinos e vacância não se aplicam aos FIIs de papel.
 
 ### Administradores
 
@@ -73,7 +73,7 @@ Não equiparar automaticamente BR-Capital, Apex Group, BRL Trust DTVM e BRL Trus
 | Tijolo passivo | Referência próxima de 0,2% a.a. | Inexistente |
 | Tijolo ativo | Referência próxima de **2% a.a.** | Até 20% do excedente de IPCA+X, somente com ótimos resultados |
 
-O valor **2%** incorpora a correção expressa do usuário. O curso usa “próximo de” e “muito superior”; não foi inventado um limite matemático de “muito superior”. Acima da referência fica a confirmar. Taxa zero, traço e fórmula truncada também exigem conferência. “Gestão definida” não é sinônimo automático de passiva; exige verificar o mandato.
+A referência de **2%** para tijolo ativo foi definida pelo usuário. Não foi adotada uma tolerância numérica adicional acima das referências de taxas. Acima da referência fica a confirmar. Taxa zero, traço e fórmula truncada também exigem conferência. “Gestão definida” não é sinônimo automático de passiva; exige verificar o mandato.
 
 Para papel/passivo, performance expressamente presente reprova. Para tijolo ativo, performance >20% reprova; identificação de IPCA e percentual ≤20% ainda depende de verificar fórmula e histórico. Traço não significa “Não há”.
 
@@ -83,4 +83,4 @@ O responsável pode registrar URL HTTPS, data e nota de conferência. O sistema 
 
 ## Preço de bolsa
 
-O preço atual, a média de seis meses e o valor justo não são requisitos dessas aulas. O aplicativo mostra a cotação e o gráfico separadamente. Estar nos filtros de fundamentos não significa que é hora de comprar. A periodicidade dos pagamentos é estimada, nunca garantida.
+O preço atual, a média de seis meses e o valor justo não são requisitos desta triagem. O aplicativo mostra a cotação e o gráfico separadamente. Estar nos filtros de fundamentos não significa que é hora de comprar. A periodicidade dos pagamentos é estimada, nunca garantida.

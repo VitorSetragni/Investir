@@ -66,7 +66,7 @@ class Api {
 
   Uri uri(String path) {
     if (!configured)
-      throw ApiError('Configure o endereço do servidor para começar.');
+      throw ApiError('O serviço está indisponível. Tente novamente mais tarde.');
     return Uri.parse('$base$path');
   }
 
@@ -101,7 +101,7 @@ class Api {
       rethrow;
     } catch (_) {
       throw ApiError(
-        'Não foi possível conectar ao servidor. Confira o endereço e sua conexão.',
+        'Não foi possível conectar. Confira sua conexão e tente novamente.',
       );
     }
   }

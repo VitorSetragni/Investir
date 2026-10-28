@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       api_url:
-        description: 'URL HTTPS da API (pode ficar vazia e ser configurada no aplicativo)'
+        description: 'URL HTTPS da API (vazia usa o endereço padrão)'
         required: false
         default: ''
   push:

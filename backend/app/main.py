@@ -19,7 +19,7 @@ from .config import settings
 from .database import initialize, session, Asset, Snapshot, MarketCache
 from .importer import parse_workbook, replace_snapshot, ImportErrorDetail
 from .market import fetch_market
-from .rules import VERSION, evaluate
+from .rules import VERSION, evaluate, present_assessment
 
 logger=logging.getLogger('investir')
 
@@ -30,7 +30,7 @@ async def lifespan(app):
     yield
 
 
-app=FastAPI(title='Investir — API',version='1.0.0',lifespan=lifespan)
+app=FastAPI(title='Investir — API',version='1.1.0',lifespan=lifespan)
 origins=[x.strip() for x in settings().allowed_origins.split(',') if x.strip()]
 app.add_middleware(CORSMiddleware,allow_origins=origins,allow_credentials=False,allow_methods=['GET','POST'],allow_headers=['Authorization','Content-Type'])
 
@@ -105,7 +105,7 @@ def lookup(ticker,db):
 @app.get('/api/assets/{ticker}')
 def detail(ticker:str,db:Session=Depends(session)):
     a=lookup(ticker,db)
-    return dict(ticker=a.ticker,name=a.name,kind=a.kind,category=a.category,segment=a.segment,source_row=a.source_row,data=a.data,assessment=a.assessment,snapshot=snapshot_json(db.get(Snapshot,a.kind)))
+    return dict(ticker=a.ticker,name=a.name,kind=a.kind,category=a.category,segment=a.segment,source_row=a.source_row,data=a.data,assessment=present_assessment(a.assessment),snapshot=snapshot_json(db.get(Snapshot,a.kind)))
 
 
 market_locks=OrderedDict()

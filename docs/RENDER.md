@@ -40,7 +40,7 @@ python3 scripts/check-server.py https://investir-api.onrender.com
 
 O verificador faz apenas consultas públicas: saúde, catálogo, competências e detalhes de um ativo. Não importa planilhas, não altera dados e não exige senha. O login, a importação autorizada e a instalação em aparelhos devem ser verificados separadamente.
 
-Os aplicativos agora usam por padrão `https://investir-api.onrender.com`, sem exigir configuração do endereço na primeira abertura. O endereço pode ser alterado em **Servidor**. As compilações de Android e macOS passaram na execução de validação, e a API padrão já está operacional. A instalação nos aparelhos físicos e o login real devem ser verificados separadamente.
+Os aplicativos agora usam por padrão `https://investir-api.onrender.com`, sem exigir configuração do endereço na primeira abertura. Na versão 1.1.0, a configuração manual do endereço foi retirada da interface; o botão de aparência alterna o tema. Para usar outro backend em outra instalação, informe `API_BASE_URL` na compilação. As compilações de Android e macOS passaram na execução de validação, e a API padrão já está operacional. A instalação nos aparelhos físicos e o login real devem ser verificados separadamente.
 
 ## Primeiro acesso e limites
 

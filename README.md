@@ -16,7 +16,7 @@ Aplicativo para macOS e Android, backend FastAPI e banco PostgreSQL no Supabase 
 - Detalhes com gráfico de até dois anos, preço e horário da cotação, último pagamento por cota, frequência e dia habituais quando o histórico permite.
 - Evidências documentais registradas por usuário autorizado. São descartadas quando a planilha correspondente é substituída.
 
-**Este repositório contém o código-fonte e os scripts de compilação.** Os instaladores são disponibilizados como arquivos após uma compilação aprovada. Eles incluem o endereço do servidor; a configuração pode ser alterada em **Servidor** no aplicativo. A disponibilidade do backend é verificada separadamente da compilação nativa. Veja [como instalar](docs/INSTALACAO.md).
+**Este repositório contém o código-fonte e os scripts de compilação.** Os instaladores são disponibilizados como arquivos após uma compilação aprovada. Eles incluem o endereço da API. O botão de aparência alterna entre os modos claro e escuro e salva a escolha no aparelho. A disponibilidade do backend é verificada separadamente da compilação nativa. Veja [como instalar](docs/INSTALACAO.md).
 
 ## 1. Testar o backend localmente com suas planilhas
 
@@ -76,7 +76,7 @@ bash scripts/build.sh macos
 
 Também há `Criar-app-Mac.command` para executar no Terminal. Se necessário, dê permissão uma vez com `chmod +x Criar-app-Mac.command`.
 
-Resultado esperado: `dist/Investir-macOS.zip`, contendo `Investir.app`. A API pode ser configurada em **Servidor** no próprio aplicativo, sem recompilar. Opcionalmente:
+Resultado esperado: `dist/Investir-macOS.zip`, contendo `Investir.app`. O endereço da API já acompanha o aplicativo. Para uma instalação com outro backend, configure-o na compilação:
 
 ```bash
 API_BASE_URL=https://SUA-API.justrunmy.app bash scripts/build.sh macos
@@ -111,7 +111,7 @@ O código está em `VitorSetragni/Investir`. O workflow `.github/workflows/build
 
 1. Envie esta pasta a um repositório seu, preservando `.github/`.
 2. Abra **Actions → Testar e gerar aplicativos → Run workflow**.
-3. Informe a URL HTTPS da API, ou deixe vazia para configurar dentro do app.
+3. Informe a URL HTTPS da API, ou deixe vazia para usar o endereço padrão já incluído.
 4. Depois de um build aprovado, baixe os artifacts **Investir-android** e **Investir-macos**.
 
 O workflow executa testes do backend com PostgreSQL 16, análise Dart, testes Flutter e compilação em Linux/Android e macOS. As quotas e disponibilidade dos runners dependem da sua conta GitHub.
@@ -121,7 +121,7 @@ Para assinatura Android persistente no workflow, configure os secrets `ANDROID_K
 ## 7. Importar todo mês
 
 1. Abra o app; a consulta não exige conta.
-2. Na primeira abertura, configure o endereço HTTPS do backend em **Servidor**.
+2. O aplicativo já se conecta à API padrão; não há configuração manual de servidor na interface.
 3. Toque em **Importar**, entre com a conta autorizada, escolha **Ações** ou **FIIs**, mês e ano.
 4. Selecione o XLSX e escolha **Validar e revisar**.
 5. Confira as contagens e confirme **Substituir base**.
@@ -163,3 +163,9 @@ Verificado nesta entrega: **46 testes automatizados de backend aprovados** com S
 No GitHub Actions, **os 46 testes do backend com PostgreSQL 16, a análise Flutter, os seis testes Flutter e os builds APK/macOS passaram** na execução de validação. Os testes da nuvem usam dados fictícios. A execução local do SDK, bloqueada anteriormente pela revisão automática, não foi repetida. **Instalação em aparelhos físicos, validação visual nativa, login de uma conta real e importação autenticada continuam pendentes.** A API publicada foi verificada com PostgreSQL de produção: saúde, catálogo com 374 ações/355 FIIs, detalhe de ativo, respostas 401 nas importações sem login e rejeição de credenciais inválidas. B3SA3 e KNCR11 retornaram cotação, 497 pontos de histórico por ativo e tabelas de proventos, sem avisos do provedor nessa conferência.
 
 O banco Supabase e a API gratuita do Render estão operacionais. A identidade técnica do backend foi ativada com autorização do usuário, e sua senha exclusiva foi guardada na configuração privada do Render. Nenhuma senha de produção ou chave privilegiada foi incluída no código. Falta criar a conta Auth pessoal para importar planilhas; a consulta pública já funciona sem login. Consulte `docs/RENDER.md` para repetir a verificação.
+
+## Interface 1.1.0
+
+O botão ao lado de Importar alterna entre modo claro e escuro, com preferência salva no aparelho. A tela Regras mostra apenas os títulos dos grupos; cada um abre seus critérios em uma página própria. Aprenda um pouco mais oferece glossário com busca, incluindo os códigos 3, 4 e 11. O detalhe de cada ativo tem um atalho para sua página no Status Invest.
+
+As referências numeradas de material didático foram substituídas por nomes dos grupos de critérios, inclusive na apresentação de avaliações já salvas. Esta atualização não reclassifica ativos nem altera os limites de triagem. A interpretação do traço em taxa de performance permanece separada para discussão com o usuário.

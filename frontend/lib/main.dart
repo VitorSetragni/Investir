@@ -5,13 +5,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'api.dart';
+import 'app_theme.dart';
+import 'education.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-const bg = Color(0xFF0B111B),
-    panel = Color(0xFF131D2B),
-    line = Color(0xFF273449),
-    mint = Color(0xFF74E5B2),
-    muted = Color(0xFF9BAEC6),
-    amber = Color(0xFFF5C47C);
 final money = NumberFormat.currency(
   locale: 'pt_BR',
   symbol: 'R\$',
@@ -27,12 +24,6 @@ const names = {
   'fail': 'Não atende',
   'pending': 'A confirmar',
   'na': 'Não se aplica',
-};
-Color statusColor(String status) => switch (status) {
-  'preferred' || 'pass' => mint,
-  'acceptable' => amber,
-  'excluded' || 'fail' => const Color(0xFFFF9B9B),
-  _ => muted,
 };
 String monthLabel(String? s) {
   if (s == null) return 'Sem planilha';
@@ -101,57 +92,62 @@ Future<void> main() async {
   runApp(InvestirApp(api: api));
 }
 
-class InvestirApp extends StatelessWidget {
+class InvestirApp extends StatefulWidget {
   final Api api;
   const InvestirApp({super.key, required this.api});
+  @override
+  State<InvestirApp> createState() => _InvestirAppState();
+}
+
+class _InvestirAppState extends State<InvestirApp> {
+  bool darkMode = true, themeChanged = false;
+
+  @override
+  void initState() {
+    super.initState();
+    restoreTheme();
+  }
+
+  Future<void> restoreTheme() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (mounted && !themeChanged) {
+        setState(() => darkMode = prefs.getBool('dark_mode') ?? true);
+      }
+    } catch (_) {
+      // A preferência local não impede o uso do aplicativo.
+    }
+  }
+
+  Future<void> toggleTheme() async {
+    final next = !darkMode;
+    setState(() {
+      darkMode = next;
+      themeChanged = true;
+    });
+    try {
+      await (await SharedPreferences.getInstance()).setBool('dark_mode', next);
+    } catch (_) {
+      // Em caso de falha no armazenamento, a escolha vale nesta sessão.
+    }
+  }
+
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'Investir',
     debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      brightness: Brightness.dark,
-      useMaterial3: true,
-      scaffoldBackgroundColor: bg,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: mint,
-        brightness: Brightness.dark,
-        surface: panel,
-        primary: mint,
-      ),
-      fontFamily: 'Roboto',
-      dividerColor: line,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: bg,
-        surfaceTintColor: Colors.transparent,
-      ),
-      cardTheme: CardThemeData(
-        color: panel,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: line),
-        ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: panel,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: line),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: line),
-        ),
-      ),
-    ),
-    home: Home(api: api),
+    theme: investirTheme(Brightness.light),
+    darkTheme: investirTheme(Brightness.dark),
+    themeMode: darkMode ? ThemeMode.dark : ThemeMode.light,
+    home: Home(api: widget.api, darkMode: darkMode, onToggleTheme: toggleTheme),
   );
 }
 
 class Home extends StatefulWidget {
   final Api api;
-  const Home({super.key, required this.api});
+  final bool darkMode;
+  final VoidCallback onToggleTheme;
+  const Home({super.key, required this.api, required this.darkMode, required this.onToggleTheme});
   @override
   State<Home> createState() => _HomeState();
 }
@@ -207,57 +203,6 @@ class _HomeState extends State<Home> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
-  Future<void> configure() async {
-    final ctrl = TextEditingController(text: widget.api.base);
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Conectar ao servidor'),
-        content: SizedBox(
-          width: 440,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Informe o endereço HTTPS do seu backend. A consulta é pública; o login só é usado para atualizar a base.',
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: ctrl,
-                autofocus: true,
-                keyboardType: TextInputType.url,
-                decoration: const InputDecoration(
-                  labelText: 'Endereço da API',
-                  hintText: 'https://seu-app.justrunmy.app',
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, ctrl.text),
-            child: const Text('Conectar'),
-          ),
-        ],
-      ),
-    );
-    if (result != null) {
-      try {
-        await widget.api.configure(result);
-        catalog = null;
-        await load();
-      } catch (e) {
-        message(e.toString());
-      }
-    }
-  }
-
   Future<bool> login() async {
     final result = await showDialog<bool>(
       context: context,
@@ -269,7 +214,7 @@ class _HomeState extends State<Home> {
 
   Future<void> importSheet() async {
     if (!widget.api.configured) {
-      await configure();
+      message('O serviço está indisponível. Tente novamente mais tarde.');
       return;
     }
     if (!widget.api.signedIn && !await login()) return;
@@ -333,17 +278,17 @@ class _HomeState extends State<Home> {
 
   Widget rail() => Container(
     width: 210,
-    decoration: const BoxDecoration(
-      color: panel,
-      border: Border(right: BorderSide(color: line)),
+    decoration: BoxDecoration(
+      color: context.palette.panel,
+      border: Border(right: BorderSide(color: context.palette.line)),
     ),
     padding: const EdgeInsets.fromLTRB(18, 30, 18, 22),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
+        Row(
           children: [
-            Icon(Icons.stacked_line_chart, color: mint, size: 30),
+            Icon(Icons.stacked_line_chart, color: context.palette.mint, size: 30),
             SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -356,9 +301,9 @@ class _HomeState extends State<Home> {
           ],
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'FUNDAMENTOS EM FOCO',
-          style: TextStyle(color: muted, fontSize: 10, letterSpacing: 1.6),
+          style: TextStyle(color: context.palette.muted, fontSize: 10, letterSpacing: 1.6),
         ),
         const SizedBox(height: 46),
         for (final (i, icon, label) in [
@@ -370,17 +315,17 @@ class _HomeState extends State<Home> {
             padding: const EdgeInsets.only(bottom: 10),
             child: Material(
               color: page == i
-                  ? mint.withValues(alpha: .12)
+                  ? context.palette.mint.withValues(alpha: .12)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
               child: ListTile(
                 dense: true,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                leading: Icon(icon, color: page == i ? mint : muted),
+                leading: Icon(icon, color: page == i ? context.palette.mint : context.palette.muted),
                 title: Text(
                   label,
                   style: TextStyle(
-                    color: page == i ? mint : muted,
+                    color: page == i ? context.palette.mint : context.palette.muted,
                     fontSize: 13,
                   ),
                 ),
@@ -396,7 +341,7 @@ class _HomeState extends State<Home> {
         const SizedBox(height: 12),
         Text(
           widget.api.signedIn ? 'Importação autorizada' : 'Consulta pública',
-          style: const TextStyle(color: muted, fontSize: 12),
+          style: TextStyle(color: context.palette.muted, fontSize: 12),
         ),
         const SizedBox(height: 8),
         Text(
@@ -406,11 +351,7 @@ class _HomeState extends State<Home> {
           overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 16),
-        OutlinedButton.icon(
-          onPressed: configure,
-          icon: const Icon(Icons.settings_outlined, size: 16),
-          label: const Text('Servidor'),
-        ),
+
       ],
     ),
   );
@@ -420,15 +361,15 @@ class _HomeState extends State<Home> {
       children: [
         Expanded(
           child: wide
-              ? const Text(
+              ? Text(
                   'Carteira de pesquisa',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: muted, fontSize: 13),
+                  style: TextStyle(color: context.palette.muted, fontSize: 13),
                 )
-              : const Row(
+              : Row(
                   children: [
-                    Icon(Icons.stacked_line_chart, color: mint),
+                    Icon(Icons.stacked_line_chart, color: context.palette.mint),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -446,12 +387,12 @@ class _HomeState extends State<Home> {
           onPressed: loading ? null : load,
           icon: const Icon(Icons.refresh, size: 21),
         ),
-        if (!wide)
-          IconButton(
-            tooltip: 'Servidor',
-            onPressed: configure,
-            icon: const Icon(Icons.settings_outlined, size: 21),
-          ),
+        IconButton(
+          key: const ValueKey('theme-toggle'),
+          tooltip: widget.darkMode ? 'Ativar modo claro' : 'Ativar modo escuro',
+          onPressed: widget.onToggleTheme,
+          icon: Icon(widget.darkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined, size: 21),
+        ),
         if (widget.api.signedIn)
           IconButton(
             tooltip: 'Sair da conta',
@@ -470,37 +411,8 @@ class _HomeState extends State<Home> {
     ),
   );
   Widget body(bool wide) {
-    if (!widget.api.configured)
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.hub_outlined, size: 64, color: mint),
-              const SizedBox(height: 24),
-              const Text(
-                'Conecte sua base de investimentos',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 14),
-              const Text(
-                'Ações e FIIs organizados pelas suas regras, com a competência de cada planilha sempre visível.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: muted),
-              ),
-              const SizedBox(height: 28),
-              FilledButton(
-                onPressed: configure,
-                child: const Text('Configurar servidor'),
-              ),
-            ],
-          ),
-        ),
-      );
     if (loading && catalog == null)
-      return const Center(
+      return Center(
         child: Padding(
           padding: EdgeInsets.all(24),
           child: Column(
@@ -513,7 +425,7 @@ class _HomeState extends State<Home> {
               Text(
                 'O primeiro acesso pode levar até 2 minutos.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: muted),
+                style: TextStyle(color: context.palette.muted),
               ),
             ],
           ),
@@ -526,7 +438,7 @@ class _HomeState extends State<Home> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.cloud_off_outlined, size: 44, color: amber),
+              Icon(Icons.cloud_off_outlined, size: 44, color: context.palette.amber),
               const SizedBox(height: 16),
               Text(error!, textAlign: TextAlign.center),
               const SizedBox(height: 20),
@@ -534,10 +446,7 @@ class _HomeState extends State<Home> {
                 onPressed: load,
                 child: const Text('Tentar novamente'),
               ),
-              TextButton(
-                onPressed: configure,
-                child: const Text('Alterar servidor'),
-              ),
+
             ],
           ),
         ),
@@ -592,7 +501,7 @@ class _HomeState extends State<Home> {
             page == 0
                 ? 'Compare os fundamentos por setor.'
                 : 'Explore tijolo e papel por segmento de atuação.',
-            style: const TextStyle(color: muted, fontSize: 14),
+            style: TextStyle(color: context.palette.muted, fontSize: 14),
           ),
           const SizedBox(height: 22),
           Wrap(
@@ -608,7 +517,7 @@ class _HomeState extends State<Home> {
                 tag(
                   Icons.science_outlined,
                   'Ambiente local de demonstração',
-                  color: amber,
+                  color: context.palette.amber,
                 ),
             ],
           ),
@@ -643,10 +552,10 @@ class _HomeState extends State<Home> {
                         child: Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: panel,
+                            color: context.palette.panel,
                             borderRadius: BorderRadius.circular(15),
                             border: Border.all(
-                              color: filter == s ? statusColor(s) : line,
+                              color: filter == s ? statusColor(context, s) : context.palette.line,
                             ),
                           ),
                           child: Column(
@@ -657,14 +566,14 @@ class _HomeState extends State<Home> {
                                 style: TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.w700,
-                                  color: statusColor(s),
+                                  color: statusColor(context, s),
                                 ),
                               ),
                               const SizedBox(height: 5),
                               Text(
                                 names[s]!,
-                                style: const TextStyle(
-                                  color: muted,
+                                style: TextStyle(
+                                  color: context.palette.muted,
                                   fontSize: 12,
                                 ),
                               ),
@@ -713,7 +622,7 @@ class _HomeState extends State<Home> {
           const SizedBox(height: 12),
           Text(
             '${filtered.length} ativos nesta seleção',
-            style: const TextStyle(color: muted, fontSize: 12),
+            style: TextStyle(color: context.palette.muted, fontSize: 12),
           ),
           const SizedBox(height: 6),
           if (filtered.isEmpty)
@@ -721,9 +630,9 @@ class _HomeState extends State<Home> {
               padding: const EdgeInsets.symmetric(vertical: 36),
               child: Column(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.filter_alt_off_outlined,
-                    color: muted,
+                    color: context.palette.muted,
                     size: 38,
                   ),
                   const SizedBox(height: 12),
@@ -732,7 +641,7 @@ class _HomeState extends State<Home> {
                         ? 'Importe a primeira planilha para gerar a triagem.'
                         : 'Nenhum ativo nesta seleção. Consulte “A confirmar” para dados que exigem conferência.',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: muted),
+                    style: TextStyle(color: context.palette.muted),
                   ),
                 ],
               ),
@@ -742,7 +651,7 @@ class _HomeState extends State<Home> {
               padding: const EdgeInsets.only(top: 20, bottom: 12),
               child: Row(
                 children: [
-                  Container(width: 3, height: 18, color: mint),
+                  Container(width: 3, height: 18, color: context.palette.mint),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -755,7 +664,7 @@ class _HomeState extends State<Home> {
                   ),
                   Text(
                     '${groups[key]!.length}',
-                    style: const TextStyle(color: muted),
+                    style: TextStyle(color: context.palette.muted),
                   ),
                 ],
               ),
@@ -780,9 +689,9 @@ class _HomeState extends State<Home> {
             ),
           ],
           const SizedBox(height: 28),
-          const Text(
+          Text(
             'A triagem usa os dados da planilha. Não avalia preço justo nem garante continuidade de lucros ou rendimentos.',
-            style: TextStyle(color: muted, fontSize: 12),
+            style: TextStyle(color: context.palette.muted, fontSize: 12),
           ),
         ],
       ),
@@ -813,15 +722,15 @@ class _HomeState extends State<Home> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: line,
+                    color: context.palette.line,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     a['ticker'].toString().substring(0, 2),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: mint,
+                      color: context.palette.mint,
                     ),
                   ),
                 ),
@@ -841,12 +750,12 @@ class _HomeState extends State<Home> {
                         a['name'],
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 12, color: muted),
+                        style: TextStyle(fontSize: 12, color: context.palette.muted),
                       ),
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: muted),
+                Icon(Icons.chevron_right, color: context.palette.muted),
               ],
             ),
             const SizedBox(height: 18),
@@ -860,128 +769,55 @@ class _HomeState extends State<Home> {
                   : 'Veja os critérios e seus valores',
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 12, color: muted, height: 1.5),
+              style: TextStyle(fontSize: 12, color: context.palette.muted, height: 1.5),
             ),
           ],
         ),
       ),
     ),
   );
-  Widget about() => ListView(
-    padding: const EdgeInsets.all(28),
-    children: [
-      const Text(
-        'Regras da triagem',
-        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-      ),
-      const SizedBox(height: 14),
-      const Text(
-        'Baseadas nas aulas 4.2 a 4.4 e 5.2 a 5.4 do material fornecido. Cada ativo mostra o valor, a referência, a fonte da regra e as pendências.',
-        style: TextStyle(color: muted, height: 1.6),
-      ),
-      const SizedBox(height: 22),
-      for (final (title, body) in [
-        (
-          'Sociedade',
-          'Somente ON. Tag along de 100% preferido e ≥80% tolerado. Free float >35% preferido e 15–35% tolerado. Preferência por Novo Mercado. Sem controle estatal direto ou indireto.',
-        ),
-        (
-          'Lucro e negócio',
-          'Lucro consistente ≥11 anos preferido; 6–10 anos tolerado. Mínimo de 5 anos de listagem. Dívida líquida/EBITDA <3x preferida, 3–4x intermediária, >4x excluída. Filtros: ROE/ROIC ≥10%, PL ≥R\$ 1 bi, liquidez ≥R\$ 10 mi/dia, margens EBIT e líquida ≥4%.',
-        ),
-        (
-          'FIIs de tijolo',
-          'Preferência por 10 imóveis ou mais; seu mínimo é 8. Vacância <25% preferida e 25–30% tolerada. Multi-inquilino e listagem >4 anos. Preferência por lajes, logística e shopping. Residencial e outros intermediários; hospital/hotel excluídos.',
-        ),
-        (
-          'FIIs de papel',
-          'Não se aplicam vacância, imóveis e inquilinos. CRIs: alocação >75% e ≥50 títulos preferidos; ≥50% e ≥30 títulos no mínimo.',
-        ),
-        (
-          'Gestão e taxas',
-          'Ranking de administradores fornecido. Papel: referência 1% a.a., sem performance. Tijolo passivo: referência 0,2% a.a., sem performance. Tijolo ativo: referência 2% a.a.; performance até 20% do excedente de IPCA+X, com ótimos resultados. Acima da referência fica a confirmar, pois o curso não define “muito superior” numericamente.',
-        ),
-        (
-          'Informações incompletas',
-          'Traço em performance e taxa de administração zero exigem conferência. Número de negociações não é volume em reais. A planilha não prova sozinha lucro anual consecutivo. “Dentro dos filtros” significa conformidade com os dados disponíveis.',
-        ),
-        (
-          'Preços e proventos',
-          'Cotações de provedor público, sujeitas a atraso, com cache de 15 minutos. Gráfico de preços não representa retorno total. Periodicidade e dia de pagamento são estimativas históricas. Não há preço justo automático.',
-        ),
-      ])
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 17,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(body, style: const TextStyle(color: muted, height: 1.6)),
-              ],
-            ),
-          ),
-        ),
-    ],
-  );
+  Widget about() => const RulesOverviewPage();
+
 }
 
-Widget tag(IconData icon, String label, {Color color = muted}) => Container(
-  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-  decoration: BoxDecoration(
-    border: Border.all(color: line),
-    borderRadius: BorderRadius.circular(10),
-  ),
-  child: Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Icon(icon, color: color, size: 16),
-      const SizedBox(width: 8),
-      Flexible(child: Text(label, style: TextStyle(color: color, fontSize: 12))),
-    ],
-  ),
-);
-Widget statusBadge(String status) => Container(
-  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-  decoration: BoxDecoration(
-    color: statusColor(status).withValues(alpha: .10),
-    borderRadius: BorderRadius.circular(8),
-  ),
-  child: Text(
-    names[status] ?? status,
-    style: TextStyle(
-      fontSize: 11,
-      fontWeight: FontWeight.w600,
-      color: statusColor(status),
+Widget tag(IconData icon, String label, {Color? color}) => Builder(
+  builder: (context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+    decoration: BoxDecoration(
+      border: Border.all(color: context.palette.line),
+      borderRadius: BorderRadius.circular(10),
     ),
+    child: Row(mainAxisSize: MainAxisSize.min, children: [
+      Icon(icon, color: color ?? context.palette.muted, size: 16),
+      const SizedBox(width: 8),
+      Flexible(child: Text(label, style: TextStyle(color: color ?? context.palette.muted, fontSize: 12))),
+    ]),
   ),
 );
-Widget notice(String text, IconData icon) => Container(
-  padding: const EdgeInsets.all(14),
-  decoration: BoxDecoration(
-    color: amber.withValues(alpha: .07),
-    border: Border.all(color: amber.withValues(alpha: .22)),
-    borderRadius: BorderRadius.circular(12),
+Widget statusBadge(String status) => Builder(
+  builder: (context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    decoration: BoxDecoration(
+      color: statusColor(context, status).withValues(alpha: .10),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Text(names[status] ?? status, style: TextStyle(
+      fontSize: 11, fontWeight: FontWeight.w600, color: statusColor(context, status))),
   ),
-  child: Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Icon(icon, color: amber, size: 20),
+);
+Widget notice(String text, IconData icon) => Builder(
+  builder: (context) => Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: context.palette.amber.withValues(alpha: .07),
+      border: Border.all(color: context.palette.amber.withValues(alpha: .22)),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Icon(icon, color: context.palette.amber, size: 20),
       const SizedBox(width: 10),
-      Expanded(
-        child: Text(
-          text,
-          style: const TextStyle(fontSize: 12, color: amber, height: 1.5),
-        ),
-      ),
-    ],
+      Expanded(child: Text(text, style: TextStyle(fontSize: 12, color: context.palette.amber, height: 1.5))),
+    ]),
   ),
 );
 
@@ -1030,9 +866,9 @@ class _LoginDialogState extends State<LoginDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'A consulta é livre. Use a conta autorizada pelo responsável para substituir as planilhas.',
-              style: TextStyle(color: muted, height: 1.5),
+              style: TextStyle(color: context.palette.muted, height: 1.5),
             ),
             const SizedBox(height: 22),
             TextField(
@@ -1066,7 +902,7 @@ class _LoginDialogState extends State<LoginDialog> {
             if (error != null)
               Padding(
                 padding: const EdgeInsets.only(top: 14),
-                child: Text(error!, style: const TextStyle(color: amber)),
+                child: Text(error!, style: TextStyle(color: context.palette.amber)),
               ),
           ],
         ),
@@ -1178,9 +1014,9 @@ class _ImportDialogState extends State<ImportDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (preview == null) ...[
-                const Text(
+                Text(
                   'Escolha o tipo e a competência. A outra planilha será mantida.',
-                  style: TextStyle(color: muted, height: 1.5),
+                  style: TextStyle(color: context.palette.muted, height: 1.5),
                 ),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<String>(
@@ -1246,7 +1082,7 @@ class _ImportDialogState extends State<ImportDialog> {
                 if (filename != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
-                    child: Text(filename!, style: const TextStyle(color: mint)),
+                    child: Text(filename!, style: TextStyle(color: context.palette.mint)),
                   ),
               ] else ...[
                 Text(
@@ -1271,7 +1107,7 @@ class _ImportDialogState extends State<ImportDialog> {
                         Text(
                           '${preview!['counts'][s] ?? 0}',
                           style: TextStyle(
-                            color: statusColor(s),
+                            color: statusColor(context, s),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -1287,7 +1123,7 @@ class _ImportDialogState extends State<ImportDialog> {
               if (error != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 16),
-                  child: Text(error!, style: const TextStyle(color: amber)),
+                  child: Text(error!, style: TextStyle(color: context.palette.amber)),
                 ),
             ],
           ),
@@ -1355,9 +1191,9 @@ class _AssetDetailState extends State<AssetDetail> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
+                  Text(
                     'Registre somente o que você conferiu em documento oficial. Esta evidência vale apenas para a planilha atual.',
-                    style: TextStyle(color: muted, height: 1.5),
+                    style: TextStyle(color: context.palette.muted, height: 1.5),
                   ),
                   const SizedBox(height: 18),
                   DropdownButtonFormField<String>(
@@ -1410,7 +1246,7 @@ class _AssetDetailState extends State<AssetDetail> {
                   if (error != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 12),
-                      child: Text(error!, style: const TextStyle(color: amber)),
+                      child: Text(error!, style: TextStyle(color: context.palette.amber)),
                     ),
                 ],
               ),
@@ -1507,6 +1343,9 @@ class _AssetDetailState extends State<AssetDetail> {
                     tag(Icons.layers_outlined, d['segment']),
                   ],
                 ),
+                const SizedBox(height: 18),
+                Align(alignment: Alignment.centerLeft,
+                  child: StatusInvestButton(ticker: widget.ticker, kind: d['kind'])),
                 const SizedBox(height: 24),
                 FutureBuilder(
                   future: marketFuture,
@@ -1532,7 +1371,7 @@ class _AssetDetailState extends State<AssetDetail> {
                 const SizedBox(height: 8),
                 Text(
                   'Dados da planilha, linha ${d['source_row']}. Regras ${a['version']}.',
-                  style: const TextStyle(color: muted, fontSize: 12),
+                  style: TextStyle(color: context.palette.muted, fontSize: 12),
                 ),
                 const SizedBox(height: 16),
                 for (final r in rules)
@@ -1551,7 +1390,7 @@ class _AssetDetailState extends State<AssetDetail> {
                         'acceptable' => Icons.tune,
                         'pending' => Icons.help_outline,
                         _ => Icons.remove_circle_outline,
-                      }, color: statusColor(r['status'])),
+                      }, color: statusColor(context, r['status'])),
                       title: Text(
                         r['label'],
                         style: const TextStyle(
@@ -1563,7 +1402,7 @@ class _AssetDetailState extends State<AssetDetail> {
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(
                           shown(r['value'], r['key']),
-                          style: const TextStyle(color: muted, fontSize: 12),
+                          style: TextStyle(color: context.palette.muted, fontSize: 12),
                         ),
                       ),
                       trailing: statusBadge(r['status']),
@@ -1580,8 +1419,8 @@ class _AssetDetailState extends State<AssetDetail> {
                               const SizedBox(height: 8),
                               Text(
                                 r['source'],
-                                style: const TextStyle(
-                                  color: mint,
+                                style: TextStyle(
+                                  color: context.palette.mint,
                                   fontSize: 12,
                                 ),
                               ),
@@ -1589,8 +1428,8 @@ class _AssetDetailState extends State<AssetDetail> {
                                 const SizedBox(height: 10),
                                 Text(
                                   r['note'],
-                                  style: const TextStyle(
-                                    color: muted,
+                                  style: TextStyle(
+                                    color: context.palette.muted,
                                     fontSize: 12,
                                     height: 1.5,
                                   ),
@@ -1608,8 +1447,8 @@ class _AssetDetailState extends State<AssetDetail> {
                     padding: const EdgeInsets.only(bottom: 10),
                     child: Text(
                       note,
-                      style: const TextStyle(
-                        color: muted,
+                      style: TextStyle(
+                        color: context.palette.muted,
                         fontSize: 12,
                         height: 1.5,
                       ),
@@ -1660,10 +1499,10 @@ class MarketPanel extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'ÚLTIMA COTAÇÃO',
                     style: TextStyle(
-                      color: muted,
+                      color: context.palette.muted,
                       fontSize: 11,
                       letterSpacing: 1.2,
                     ),
@@ -1682,7 +1521,7 @@ class MarketPanel extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     timing,
-                    style: const TextStyle(color: muted, fontSize: 12),
+                    style: TextStyle(color: context.palette.muted, fontSize: 12),
                   ),
                 ],
               ),
@@ -1691,7 +1530,7 @@ class MarketPanel extends StatelessWidget {
               tag(
                 Icons.schedule,
                 data['stale'] == true ? 'Cache antigo' : 'Cache de até 15 min',
-                color: data['stale'] == true ? amber : muted,
+                color: data['stale'] == true ? context.palette.amber : context.palette.muted,
               ),
           ],
         ),
@@ -1741,7 +1580,7 @@ class MarketPanel extends StatelessWidget {
         const SizedBox(height: 12),
         Text(
           div['note'] ?? '',
-          style: const TextStyle(color: muted, fontSize: 11, height: 1.5),
+          style: TextStyle(color: context.palette.muted, fontSize: 11, height: 1.5),
         ),
         for (final warning in data['warnings'] ?? [])
           Padding(
@@ -1803,32 +1642,25 @@ class MarketPanel extends StatelessWidget {
     );
   }
 
-  Widget metric(String title, String value, String note, double width) =>
-      SizedBox(
-        width: width,
-        child: Card(
-          margin: EdgeInsets.zero,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(color: muted, fontSize: 11)),
-                const SizedBox(height: 10),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(note, style: const TextStyle(color: muted, fontSize: 10)),
-              ],
-            ),
-          ),
+  Widget metric(String title, String value, String note, double width) => Builder(
+    builder: (context) => SizedBox(
+      width: width,
+      child: Card(
+        margin: EdgeInsets.zero,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, style: TextStyle(color: context.palette.muted, fontSize: 11)),
+            const SizedBox(height: 10),
+            Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text(note, style: TextStyle(color: context.palette.muted, fontSize: 10)),
+          ]),
         ),
-      );
+      ),
+    ),
+  );
+
 }
 
 class PriceChart extends StatefulWidget {
@@ -1856,9 +1688,9 @@ class _PriceChartState extends State<PriceChart> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: panel,
+        color: context.palette.panel,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: line),
+        border: Border.all(color: context.palette.line),
       ),
       child: Column(
         children: [
@@ -1891,7 +1723,7 @@ class _PriceChartState extends State<PriceChart> {
                       ),
                       decoration: BoxDecoration(
                         color: days == n
-                            ? mint.withValues(alpha: .13)
+                            ? context.palette.mint.withValues(alpha: .13)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -1899,7 +1731,7 @@ class _PriceChartState extends State<PriceChart> {
                         label,
                         style: TextStyle(
                           fontSize: 11,
-                          color: days == n ? mint : muted,
+                          color: days == n ? context.palette.mint : context.palette.muted,
                         ),
                       ),
                     ),
@@ -1909,12 +1741,12 @@ class _PriceChartState extends State<PriceChart> {
           ),
           const SizedBox(height: 16),
           if (values.length < 2)
-            const SizedBox(
+            SizedBox(
               height: 180,
               child: Center(
                 child: Text(
                   'Sem histórico disponível',
-                  style: TextStyle(color: muted),
+                  style: TextStyle(color: context.palette.muted),
                 ),
               ),
             )
@@ -1927,7 +1759,7 @@ class _PriceChartState extends State<PriceChart> {
                   i == null
                       ? 'Mín. ${money.format(min)}     Máx. ${money.format(max)}'
                       : '${shortDate(data[i]['date'])}   ${money.format(data[i]['close'])}',
-                  style: const TextStyle(color: muted, fontSize: 12),
+                  style: TextStyle(color: context.palette.muted, fontSize: 12),
                 ),
               ),
             ),
@@ -1959,7 +1791,7 @@ class _PriceChartState extends State<PriceChart> {
                     ),
                     child: CustomPaint(
                       size: Size(c.maxWidth, 185),
-                      painter: SparkPainter(values, i),
+                      painter: SparkPainter(values, i, context.palette),
                     ),
                   ),
                 ),
@@ -1971,21 +1803,21 @@ class _PriceChartState extends State<PriceChart> {
               children: [
                 Text(
                   shortDate(data.first['date']),
-                  style: const TextStyle(color: muted, fontSize: 10),
+                  style: TextStyle(color: context.palette.muted, fontSize: 10),
                 ),
                 Text(
                   shortDate(data.last['date']),
-                  style: const TextStyle(color: muted, fontSize: 10),
+                  style: TextStyle(color: context.palette.muted, fontSize: 10),
                 ),
               ],
             ),
           ],
           const SizedBox(height: 10),
-          const Align(
+          Align(
             alignment: Alignment.centerLeft,
             child: Text(
               'Preços da fonte, sem somar dividendos. Toque ou passe o cursor para explorar.',
-              style: TextStyle(color: muted, fontSize: 10),
+              style: TextStyle(color: context.palette.muted, fontSize: 10),
             ),
           ),
         ],
@@ -1997,7 +1829,8 @@ class _PriceChartState extends State<PriceChart> {
 class SparkPainter extends CustomPainter {
   final List<double> values;
   final int? selected;
-  SparkPainter(this.values, this.selected);
+  final AppPalette palette;
+  SparkPainter(this.values, this.selected, this.palette);
   @override
   void paint(Canvas canvas, Size size) {
     if (values.length < 2) return;
@@ -2008,7 +1841,7 @@ class SparkPainter extends CustomPainter {
       12 + (1 - (values[i] - lo) / span) * (size.height - 24),
     );
     final grid = Paint()
-      ..color = line
+      ..color = palette.line
       ..strokeWidth = 1;
     for (var i = 0; i < 4; i++) {
       final y = i / 3 * size.height;
@@ -2028,13 +1861,13 @@ class SparkPainter extends CustomPainter {
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [mint.withValues(alpha: .20), mint.withValues(alpha: 0)],
+          colors: [palette.mint.withValues(alpha: .20), palette.mint.withValues(alpha: 0)],
         ).createShader(Offset.zero & size),
     );
     canvas.drawPath(
       path,
       Paint()
-        ..color = mint
+        ..color = palette.mint
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke
         ..strokeJoin = StrokeJoin.round,
@@ -2045,14 +1878,52 @@ class SparkPainter extends CustomPainter {
         Offset(p.dx, 0),
         Offset(p.dx, size.height),
         Paint()
-          ..color = muted
+          ..color = palette.muted
           ..strokeWidth = 1,
       );
-      canvas.drawCircle(p, 5, Paint()..color = mint);
+      canvas.drawCircle(p, 5, Paint()..color = palette.mint);
     }
   }
 
   @override
   bool shouldRepaint(SparkPainter old) =>
-      old.values != values || old.selected != selected;
+      old.values != values || old.selected != selected || old.palette != palette;
+}
+
+Uri statusInvestUri(String ticker, String kind) {
+  final normalized = ticker.trim().toUpperCase();
+  if (!RegExp(r'^[A-Z][A-Z0-9]{3}\d{1,2}$').hasMatch(normalized) ||
+      !{'stocks', 'fiis'}.contains(kind)) {
+    throw ArgumentError('Ativo inválido para consultar no Status Invest.');
+  }
+  final section = kind == 'stocks' ? 'acoes' : 'fundos-imobiliarios';
+  return Uri.https('statusinvest.com.br', '/$section/${normalized.toLowerCase()}');
+}
+
+class StatusInvestButton extends StatelessWidget {
+  final String ticker, kind;
+  final Future<bool> Function(Uri)? launcher;
+  const StatusInvestButton({super.key, required this.ticker, required this.kind, this.launcher});
+
+  Future<void> open(BuildContext context) async {
+    try {
+      final uri = statusInvestUri(ticker, kind);
+      final opened = await (launcher?.call(uri) ?? launchUrl(uri, mode: LaunchMode.externalApplication));
+      if (opened) return;
+    } catch (_) {
+      // Falha de abertura é apresentada sem interromper a consulta do ativo.
+    }
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Não foi possível abrir o Status Invest. Confira seu navegador e tente novamente.'),
+      ));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => OutlinedButton.icon(
+    onPressed: () => open(context),
+    icon: const Icon(Icons.open_in_new, size: 18),
+    label: const Text('Ver no Status Invest'),
+  );
 }
