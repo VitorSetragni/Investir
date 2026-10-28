@@ -44,7 +44,7 @@ jobs:
         include:
           - os: ubuntu-latest
             target: android
-          - os: macos-15
+          - os: macos-15-intel
             target: macos
     runs-on: ${{ matrix.os }}
     env:
