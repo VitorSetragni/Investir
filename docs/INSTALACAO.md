@@ -1,6 +1,6 @@
 # Instalar os aplicativos
 
-Versão **1.1.1 (build 3)**. O botão de aparência alterna o tema e lembra sua escolha. A página Gestão e taxas explica a convenção de performance zero.
+Versão **1.1.2 (build 4)**. O rodapé do modo escuro usa a paleta azul-escura e verde-menta do aplicativo. O modo claro foi preservado. O botão de aparência alterna o tema e lembra sua escolha.
 
 Os instaladores são gerados pelo GitHub Actions e disponibilizados como arquivos para download. Não há publicação automática em Releases nem permissão de escrita adicional na CI.
 

@@ -49,7 +49,7 @@ Color statusColor(BuildContext context, String status) => switch (status) {
 
 ThemeData investirTheme(Brightness brightness) {
   final p = brightness == Brightness.dark ? AppPalette.dark : AppPalette.light;
-  return ThemeData(
+  final theme = ThemeData(
     brightness: brightness,
     useMaterial3: true,
     scaffoldBackgroundColor: p.bg,
@@ -84,6 +84,29 @@ ThemeData investirTheme(Brightness brightness) {
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide(color: p.line),
       ),
+    ),
+  );
+
+  if (brightness != Brightness.dark) return theme;
+
+  Color destinationColor(Set<WidgetState> states) {
+    if (states.contains(WidgetState.disabled)) {
+      return p.muted.withValues(alpha: .38);
+    }
+    return states.contains(WidgetState.selected) ? p.mint : p.muted;
+  }
+
+  return theme.copyWith(
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: p.panel,
+      surfaceTintColor: Colors.transparent,
+      indicatorColor: p.mint.withValues(alpha: .12),
+      iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
+        size: 24,
+        color: destinationColor(states),
+      )),
+      labelTextStyle: WidgetStateProperty.resolveWith((states) =>
+        theme.textTheme.labelMedium!.copyWith(color: destinationColor(states))),
     ),
   );
 }

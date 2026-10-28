@@ -179,3 +179,7 @@ A versão `2026.10.28.1` aplica a decisão sobre performance zero e atualiza as 
 Validação local: **85 testes do backend aprovados**, incluindo valores zero e vazios, taxas positivas, preservação das evidências, reclassificação idempotente e os 11 administradores do PDF. A [execução 7 do GitHub Actions](https://github.com/VitorSetragni/Investir/actions/runs/40706586540), no commit `912c057`, também aprovou os **85 testes com PostgreSQL 16, os 11 testes Flutter em cada plataforma e os builds Mac/Android**. A análise Dart manteve as 19 sugestões informativas de estilo, sem erros ou warnings.
 
 A versão foi implantada no Render gratuito e verificada pela API e no banco: **7 FIIs preferidos, 6 aceitáveis, 28 a confirmar e 314 fora**, com as classificações das ações e as duas competências preservadas. O detalhe de KNCR11 mantém o valor original `-` e mostra performance `0%`, benchmark `0` e critério atendido. Os pacotes 1.1.1/build 3 foram conferidos: integridade, versão, API incluída, Mac Intel/Apple Silicon e alinhamento Android de 16 KB. A assinatura de teste do APK mudou em relação à entrega 1.1.0.
+
+## Rodapé 1.1.2
+
+Somente no modo escuro, o rodapé de navegação usa explicitamente o fundo azul-escuro dos painéis, o verde-menta na seleção e a cor secundária do aplicativo nos demais destinos. A paleta e a configuração do modo claro permanecem iguais. As regras, os dados e o servidor não foram alterados nesta versão.
