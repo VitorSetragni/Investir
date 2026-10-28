@@ -19,7 +19,9 @@ class Api {
   final FlutterSecureStorage storage;
   Api({http.Client? client, FlutterSecureStorage? storage})
     : client = client ?? http.Client(),
-      storage = storage ?? const FlutterSecureStorage();
+      storage = storage ?? const FlutterSecureStorage(
+        mOptions: MacOsOptions(useDataProtectionKeyChain: false),
+      );
   String base = const String.fromEnvironment(
     'API_BASE_URL',
     defaultValue: 'https://investir-api.onrender.com',

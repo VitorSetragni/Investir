@@ -56,7 +56,10 @@ if (investirKeyFile.exists()) investirKeyFile.inputStream().use { investirSignin
     for filename in ('DebugProfile.entitlements','Release.entitlements'):
         path=ROOT/'macos/Runner'/filename
         with path.open('rb') as file:ent=plistlib.load(file)
-        ent.update({'com.apple.security.network.client':True,'com.apple.security.files.user-selected.read-only':True,'keychain-access-groups':['$(AppIdentifierPrefix)br.com.vitorsetragni.investir']})
+        ent.update({'com.apple.security.network.client':True,'com.apple.security.files.user-selected.read-only':True})
+        # Keychain Sharing exige provisionamento Apple e impede a abertura de
+        # builds com assinatura local. O app usa o Chaves local, sem compartilhar.
+        ent.pop('keychain-access-groups',None)
         with path.open('wb') as file:plistlib.dump(ent,file)
     config=ROOT/'macos/Runner/Configs/AppInfo.xcconfig'
     config.write_text(config.read_text().replace('PRODUCT_NAME = investir','PRODUCT_NAME = Investir'))

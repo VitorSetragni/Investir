@@ -87,6 +87,10 @@ jobs:
           PY
       - name: Validar e compilar
         run: bash scripts/build.sh ${{ matrix.target }}
+      - name: Verificar gravação e leitura no Chaves do macOS
+        if: matrix.target == 'macos'
+        working-directory: frontend
+        run: flutter test -d macos integration_test/storage_test.dart
       - uses: actions/upload-artifact@v4
         with:
           name: Investir-${{ matrix.target }}

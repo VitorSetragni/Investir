@@ -18,6 +18,7 @@ case "$target" in
   macos)
     flutter build macos --release --dart-define="API_BASE_URL=$api_url"
     ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/Investir.app "$project_dir/dist/Investir-macOS.zip"
+    python3 "$project_dir/scripts/check-macos.py" "$project_dir/dist/Investir-macOS.zip"
     ;;
   *) echo 'Uso: bash scripts/build.sh android|macos' >&2; exit 2 ;;
 esac
