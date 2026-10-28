@@ -1,0 +1,58 @@
+{
+  "assets": [
+    {
+      "ticker": "B3SA3",
+      "name": "B3 — exemplo fictício de teste",
+      "kind": "stocks",
+      "category": "stock",
+      "segment": "Serviços financeiros",
+      "status": "preferred",
+      "acceptable_rules": [],
+      "pending_rules": []
+    },
+    {
+      "ticker": "LREN3",
+      "name": "Lojas Renner — exemplo fictício de teste",
+      "kind": "stocks",
+      "category": "stock",
+      "segment": "Comércio",
+      "status": "acceptable",
+      "acceptable_rules": [
+        "Anos gerando lucro"
+      ],
+      "pending_rules": []
+    },
+    {
+      "ticker": "KNIP11",
+      "name": "FII — exemplo fictício de teste",
+      "kind": "fiis",
+      "category": "paper",
+      "segment": "Recebíveis imobiliários",
+      "status": "review",
+      "acceptable_rules": [],
+      "pending_rules": [
+        "Taxa de Performance"
+      ]
+    }
+  ],
+  "snapshots": [
+    {
+      "kind": "stocks",
+      "reference": "2026-10",
+      "count": 2,
+      "older_than_current_month": false,
+      "revision": 1,
+      "filename": "dados_ficticios_stocks.xlsx"
+    },
+    {
+      "kind": "fiis",
+      "reference": "2026-10",
+      "count": 1,
+      "older_than_current_month": false,
+      "revision": 1,
+      "filename": "dados_ficticios_fiis.xlsx"
+    }
+  ],
+  "rules_version": "2026.10.27.1",
+  "demo": true
+}
