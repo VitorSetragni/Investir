@@ -183,3 +183,5 @@ A versão foi implantada no Render gratuito e verificada pela API e no banco: **
 ## Rodapé 1.1.2
 
 Somente no modo escuro, o rodapé de navegação usa explicitamente o fundo azul-escuro dos painéis, o verde-menta na seleção e a cor secundária do aplicativo nos demais destinos. A paleta e a configuração do modo claro permanecem iguais. As regras, os dados e o servidor não foram alterados nesta versão.
+
+A [execução 9](https://github.com/VitorSetragni/Investir/actions/runs/40713947453), no commit `5bec4a2`, aprovou os 85 testes do backend, os 11 testes Flutter em cada plataforma e os dois builds. O executor Mac passou a ser o padrão `macos-15-intel`, gratuito para repositórios públicos conforme a [referência do GitHub](https://docs.github.com/en/actions/reference/runners/github-hosted-runners). Foram conferidos integridade, versão 1.1.2/build 4, endereço da API, alinhamento Android de 16 KB e arquiteturas Intel/Apple Silicon em todos os oito binários nativos do Mac. O APK usa assinatura de teste diferente da versão 1.1.1; consulte as instruções de instalação.
