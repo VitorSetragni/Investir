@@ -128,7 +128,7 @@ void main() {
         headers: {'content-type': 'application/json; charset=utf-8'});
     }))..base = 'https://example.test';
     await tester.pumpWidget(MaterialApp(theme: investirTheme(Brightness.light),
-      home: AssetDetail(api: api, ticker: 'BRCO11'))));
+      home: AssetDetail(api: api, ticker: 'BRCO11')));
     await tester.pumpAndSettle();
     expect(find.text('Ver no Status Invest'), findsOneWidget);
     expect(find.text('Indisponível'), findsOneWidget);
