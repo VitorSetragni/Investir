@@ -92,7 +92,7 @@ Requer Flutter, Java 17 e SDK Android. Execute:
 bash scripts/build.sh android
 ```
 
-Resultado esperado para seu aparelho Android moderno: **`dist/Investir-Android-arm64.apk`**. O build usa API 36, mínimo API 23, NDK r28 e empacotamento nativo moderno, para compatibilidade com dispositivos de páginas de memória de 16 KB. A compatibilidade precisa ser confirmada instalando o APK no aparelho; essa instalação não foi realizada aqui.
+Resultado esperado para seu aparelho Android moderno: **`dist/Investir-Android-arm64.apk`**. O APK 1.1.0 gerado usa API 36, mínimo API 24, NDK r28 e empacotamento nativo moderno. O alinhamento de 16 KB das bibliotecas arm64 e do ZIP foi conferido no pacote distribuído. A compatibilidade precisa ser confirmada instalando o APK no aparelho; essa instalação não foi realizada aqui.
 
 Sem `frontend/android/key.properties`, o APK é de teste e usa a chave debug gerada pelo SDK. Para atualizar o mesmo aplicativo ao longo do tempo, mantenha uma chave de assinatura própria. Gere-a com o `keytool` do Java e crie `frontend/android/key.properties`:
 
@@ -158,9 +158,11 @@ python3 -m venv .venv
 
 Os testes usam SQLite temporário ou `TEST_DATABASE_URL`, e nunca a variável de produção `DATABASE_URL`. Use uma base de teste descartável quando informar `TEST_DATABASE_URL`.
 
-Verificado nesta entrega: **46 testes automatizados de backend aprovados** com SQLite/mocks, leitura das duas planilhas reais, contagens de 374/355, substituição, idempotência, proteção de upload, conflitos e casos de fronteira das regras. Também foram conferidos as contagens, RLS, políticas, permissões e endpoints HTTP no Supabase real. Foram consultados dados reais de B3SA3 e KNCR11: cotação, 497 pontos de histórico por ativo e tabelas de pagamentos.
+Na versão **1.1.0 (build 2)**, a [execução 6 do GitHub Actions](https://github.com/VitorSetragni/Investir/actions/runs/40701346736), no commit `b0d87a3`, concluiu com sucesso: **48 testes do backend com PostgreSQL 16, 11 testes Flutter em cada plataforma e os builds APK/macOS**. A análise Dart não teve erros nem warnings; apresentou 19 sugestões informativas de estilo. Os testes da nuvem usam dados fictícios e cobrem substituição, idempotência, proteção de upload, conflitos, fronteiras das regras, apresentação de bases antigas, temas, navegação, glossário e atalhos para Status Invest.
 
-No GitHub Actions, **os 46 testes do backend com PostgreSQL 16, a análise Flutter, os seis testes Flutter e os builds APK/macOS passaram** na execução de validação. Os testes da nuvem usam dados fictícios. A execução local do SDK, bloqueada anteriormente pela revisão automática, não foi repetida. **Instalação em aparelhos físicos, validação visual nativa, login de uma conta real e importação autenticada continuam pendentes.** A API publicada foi verificada com PostgreSQL de produção: saúde, catálogo com 374 ações/355 FIIs, detalhe de ativo, respostas 401 nas importações sem login e rejeição de credenciais inválidas. B3SA3 e KNCR11 retornaram cotação, 497 pontos de histórico por ativo e tabelas de proventos, sem avisos do provedor nessa conferência.
+Os pacotes baixados dessa execução tiveram sua integridade e versão conferidas. O Mac contém executáveis Intel e Apple Silicon, com mínimo macOS 10.15. O APK arm64 usa Android API 24 ou posterior e bibliotecas alinhadas para páginas de 16 KB. Ambos contêm o endereço da API de produção. A assinatura Android de teste difere da entrega 1.0.0; veja [como substituir a instalação anterior](docs/INSTALACAO.md).
+
+A API publicada foi novamente verificada: saúde, modo de produção, catálogo com 374 ações/355 FIIs de outubro/2026 e detalhe de ativo sem referências às aulas. As classificações continuam preservadas. Na verificação anterior, importações sem login retornaram 401, credenciais inválidas foram rejeitadas e B3SA3/KNCR11 retornaram cotação, histórico e proventos. **Instalação em aparelhos físicos, validação visual nativa, login de uma conta real e importação autenticada continuam pendentes.**
 
 O banco Supabase e a API gratuita do Render estão operacionais. A identidade técnica do backend foi ativada com autorização do usuário, e sua senha exclusiva foi guardada na configuração privada do Render. Nenhuma senha de produção ou chave privilegiada foi incluída no código. Falta criar a conta Auth pessoal para importar planilhas; a consulta pública já funciona sem login. Consulte `docs/RENDER.md` para repetir a verificação.
 

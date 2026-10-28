@@ -4,7 +4,7 @@ Versão **1.1.0 (build 2)**. O botão de aparência alterna o tema e lembra sua 
 
 Os instaladores são gerados pelo GitHub Actions e disponibilizados como arquivos para download. Não há publicação automática em Releases nem permissão de escrita adicional na CI.
 
-- Android atual: instale `Investir-Android-arm64.apk`.
+- Android atual (Android 7.0/API 24 ou posterior, arm64): instale `Investir-Android-arm64.apk`.
 - Mac: extraia `Investir-macOS.zip` e mova `Investir.app` para Aplicativos.
 - O servidor padrão é `https://investir-api.onrender.com` e já vem configurado no aplicativo.
 
@@ -12,4 +12,8 @@ O servidor padrão já está operacional e conectado ao Supabase, com 374 açõe
 
 A versão Mac usa assinatura local, sem notarização Apple, e pode exigir liberação em Privacidade e Segurança na primeira abertura. O APK usa a assinatura de teste do SDK enquanto não for configurada uma chave de distribuição persistente.
 
+A chave Android desta compilação difere da entrega 1.0.0. Se aquela versão estiver instalada, desinstale-a antes de instalar o APK 1.1.0. A sessão e as preferências locais serão apagadas; o catálogo e as planilhas da base central permanecem preservados. Para permitir atualizações futuras sobre a mesma instalação, configure uma chave persistente conforme o README.
+
 As compilações executam testes do backend com PostgreSQL, análise Flutter e testes da interface. A instalação nos aparelhos físicos e o login real precisam ser conferidos separadamente.
+
+A [compilação 1.1.0 aprovada](https://github.com/VitorSetragni/Investir/actions/runs/40701346736) concluiu os 48 testes do backend e os 11 testes Flutter em Android e macOS. Foram conferidos a integridade dos pacotes, as duas arquiteturas do Mac, o alinhamento de 16 KB no APK e o endereço da API incluído nos dois aplicativos.
