@@ -67,6 +67,8 @@ O PDF fornecido contém **11 nomes** (2 no primeiro grupo, 2 no segundo, 1 no te
 
 Não equiparar automaticamente BR-Capital, Apex Group, BRL Trust DTVM e BRL Trust Inv. Uma entidade não identificada fica a confirmar, sem concluir que sua gestão é ruim. Escala e histórico qualitativo dos administradores continuam exigindo conferência. O ranking é o do arquivo do usuário e não um ranking de mercado permanentemente atualizado.
 
+Conferência em 28/10/2026: o cadastro interpreta a abreviação BRL Trust Inv. como **BRL Trust Investimentos Ltda.**, CNPJ **23.025.053/0001-62**, conforme o [formulário de referência oficial de 2025](https://www.apexgroup.com/media/t2pnwhqv/si_383_fr_2025_bti_15042026.pdf). **Apex Group DTVM** é a atual denominação de **BRL Trust DTVM**, CNPJ **13.486.793/0001-42**, conforme [comunicado oficial no Fundos.NET de 30/09/2026](https://fnet.bmfbovespa.com.br/fnet/publico/exibirDocumento?id=1336001). O vínculo ao mesmo grupo não torna as duas pessoas jurídicas equivalentes para este cadastro. Ampliar a aprovação para outras empresas do grupo requer definir esse critério separadamente.
+
 ### Taxas
 
 | Tipo | Administração | Performance |

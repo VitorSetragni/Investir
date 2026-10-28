@@ -45,12 +45,12 @@ O uso de HTTP é permitido no código Dart apenas com essa opção explícita de
 
 ## 2. Banco e login gratuitos no Supabase
 
-1. O projeto **investir** já foi criado em sua organização. [Abra o painel](https://supabase.com/dashboard/project/stnckjpqjebsftcnlywu). As instruções seguintes também permitem configurar outra instalação Free em [supabase.com](https://supabase.com/).
-2. O schema e as políticas já estão aplicados no projeto criado. Para outra instalação, execute `database/schema.sql` no **SQL Editor**. Em produção o backend apenas valida as tabelas e o RLS, sem executar DDL. O app acessa o catálogo pela API, nunca direto pelo banco.
-3. Em **Authentication → Users**, crie a conta de quem poderá importar. Confirme o e-mail. Não há cadastro público no aplicativo.
-4. Em **Project Settings → API**, copie a URL do projeto e a chave **publishable/anon**. A chave `service_role` não é necessária.
-5. Em **Connect**, selecione **Session pooler**, porta **5432**, que atende servidores IPv4. Copie a URL PostgreSQL. Codifique caracteres especiais da senha na URL. Use `sslmode=require`.
-6. Para o projeto já criado, use `backend/.env.supabase.example`, que tem a URL e a chave publicável reais. Para outra instalação, use `backend/.env.example`. Em `UPLOADER_EMAILS`, coloque os e-mails autorizados, separados por vírgula. Estar autenticado sem estar nessa lista não permite substituir a base pública.
+1. O projeto do aplicativo já está configurado. Acesse sua instalação pelo [painel Supabase](https://supabase.com/dashboard). As instruções seguintes também permitem configurar outra instalação Free.
+2. O schema e as políticas já estão aplicados. Para outra instalação, execute `database/schema.sql` no **SQL Editor**. Em produção o backend valida as tabelas e o RLS, sem executar DDL. O app acessa o catálogo pela API.
+3. Em **Authentication → Users**, crie a conta de quem poderá importar e confirme o e-mail. Não há cadastro público no aplicativo.
+4. Em **Project Settings → API**, obtenha a URL do projeto e a chave **publishable/anon**. A chave `service_role` não é necessária.
+5. Em **Connect**, selecione **Session pooler**, porta **5432**, e obtenha a conexão PostgreSQL. Codifique caracteres especiais da senha e use `sslmode=require`.
+6. Use `backend/.env.example` como referência. Configure as credenciais somente no ambiente privado da hospedagem. Em `UPLOADER_EMAILS`, informe os e-mails autorizados. Autenticação sem inclusão nessa lista não permite substituir a base pública.
 
 O plano Free consultado inclui 500 MB de banco e autenticação, suficientes para esse catálogo. Pode pausar por baixa atividade após sete dias; a reativação é feita no painel. Confira as condições atuais em [supabase.com/pricing](https://supabase.com/pricing). O custo do JustRunMy.App é separado.
 
@@ -62,7 +62,7 @@ O serviço **investir-api** já está publicado no plano **Free**, usando o Dock
 - Saúde e conexão com o banco: [abrir /health](https://investir-api.onrender.com/health)
 - Configuração e verificação: [docs/RENDER.md](docs/RENDER.md)
 
-A variável privada `DATABASE_URL` já foi configurada no Render. Ela usa o Session pooler na porta 5432, TLS e o papel `investir_backend`, sem privilégios administrativos. Não copie essa variável para o aplicativo, para o Git ou para arquivos de exemplo.
+A variável privada `DATABASE_URL` já foi configurada no Render. Ela usa o Session pooler na porta 5432, TLS e uma identidade técnica sem privilégios administrativos. Não copie essa variável para o aplicativo, para o Git ou para arquivos de exemplo.
 
 O serviço gratuito pode pausar por inatividade. O app já aguarda até 120 segundos por solicitação e informa essa possível demora. Nenhum plano pago foi contratado. As implantações continuam manuais.
 
@@ -176,4 +176,6 @@ As referências numeradas de material didático foram substituídas por nomes do
 
 A versão `2026.10.28.1` aplica a decisão sobre performance zero e atualiza as avaliações dos FIIs existentes em uma transação na inicialização da API. Os dados originais, as competências e as evidências autorizadas são preservados. Ações, os demais critérios e a lista de administradores permanecem iguais. A página Gestão e taxas explica que performance zero não exige benchmark.
 
-Validação local: **85 testes do backend aprovados**, incluindo valores zero e vazios, taxas positivas, preservação das evidências, reclassificação idempotente e os 11 administradores do PDF. A simulação sobre os 355 FIIs de produção confirmou 7 preferidos, 6 aceitáveis, 28 a confirmar e 314 fora, sem alteração do estado de qualquer outro critério.
+Validação local: **85 testes do backend aprovados**, incluindo valores zero e vazios, taxas positivas, preservação das evidências, reclassificação idempotente e os 11 administradores do PDF. A [execução 7 do GitHub Actions](https://github.com/VitorSetragni/Investir/actions/runs/40706586540), no commit `912c057`, também aprovou os **85 testes com PostgreSQL 16, os 11 testes Flutter em cada plataforma e os builds Mac/Android**. A análise Dart manteve as 19 sugestões informativas de estilo, sem erros ou warnings.
+
+A versão foi implantada no Render gratuito e verificada pela API e no banco: **7 FIIs preferidos, 6 aceitáveis, 28 a confirmar e 314 fora**, com as classificações das ações e as duas competências preservadas. O detalhe de KNCR11 mantém o valor original `-` e mostra performance `0%`, benchmark `0` e critério atendido. Os pacotes 1.1.1/build 3 foram conferidos: integridade, versão, API incluída, Mac Intel/Apple Silicon e alinhamento Android de 16 KB. A assinatura de teste do APK mudou em relação à entrega 1.1.0.
