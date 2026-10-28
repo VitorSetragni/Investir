@@ -2,9 +2,9 @@
 
 Aplicativo para macOS e Android, backend FastAPI e banco PostgreSQL no Supabase Free. A consulta dos ativos é pública. Somente contas autorizadas importam e substituem a base mensal.
 
-**Atualização de 27/10/2026:** o banco Supabase já foi criado na sua conta e recebeu os 729 ativos. Veja [o que está pronto e os três passos restantes](docs/SUPABASE_PRONTO.md). A configuração real publicável está em `backend/.env.supabase.example`, sem senha do banco.
+**Banco e importação:** o Supabase Free mantém os 729 ativos. Veja [o estado atual e como criar o acesso para importar](docs/SUPABASE_PRONTO.md). A senha da conexão PostgreSQL fica somente na configuração privada da hospedagem.
 
-**Atualização de 28/10/2026:** o código está publicado neste repositório. As compilações de Android e Mac passaram com PostgreSQL e testes de interface na [execução de validação](https://github.com/VitorSetragni/Investir/actions/runs/40685836185). O serviço `investir-api` foi criado no Render no plano Free, mas ainda depende da conexão privada do banco para funcionar. Veja [docs/RENDER.md](docs/RENDER.md).
+**Atualização de 28/10/2026:** a API está operacional em `https://investir-api.onrender.com`, no plano Free do Render, conectada ao Supabase pelo Session pooler com uma identidade exclusiva do backend. Saúde, catálogo, detalhes e proteção contra importações sem login foram verificados em produção. As compilações Android/macOS e os testes passaram na [execução de validação](https://github.com/VitorSetragni/Investir/actions/runs/40688395379). Veja [docs/RENDER.md](docs/RENDER.md).
 
 ## O que está implementado
 
@@ -54,34 +54,17 @@ O uso de HTTP é permitido no código Dart apenas com essa opção explícita de
 
 O plano Free consultado inclui 500 MB de banco e autenticação, suficientes para esse catálogo. Pode pausar por baixa atividade após sete dias; a reativação é feita no painel. Confira as condições atuais em [supabase.com/pricing](https://supabase.com/pricing). O custo do JustRunMy.App é separado.
 
-## 3. Subir o backend no JustRunMy.App
+## 3. Backend gratuito no Render
 
-Use a pasta **backend** como raiz da implantação. Há um Dockerfile pronto:
+O serviço **investir-api** já está publicado no plano **Free**, usando o Dockerfile de `backend/` e o banco Supabase existente. Não crie outro serviço nem reaplique a carga inicial.
 
-```bash
-cd backend
-docker build -t investir-api .
-```
+- API: `https://investir-api.onrender.com`
+- Saúde e conexão com o banco: [abrir /health](https://investir-api.onrender.com/health)
+- Configuração e verificação: [docs/RENDER.md](docs/RENDER.md)
 
-No JustRunMy.App, escolha a implantação Docker/ZIP conforme seu plano. Para ZIP de código, o pacote completo contém `backend`; selecione essa pasta como diretório de build. Se a interface não permitir escolher subpasta, compacte **o conteúdo de backend** como raiz do upload. Para imagem Docker, publique a imagem no registro indicado pela plataforma.
+A variável privada `DATABASE_URL` já foi configurada no Render. Ela usa o Session pooler na porta 5432, TLS e o papel `investir_backend`, sem privilégios administrativos. Não copie essa variável para o aplicativo, para o Git ou para arquivos de exemplo.
 
-Configure estas variáveis no painel, sem colocá-las no aplicativo ou no Git:
-
-| Variável | Valor |
-|---|---|
-| `DATABASE_URL` | Conexão do Session pooler Supabase, com `sslmode=require` |
-| `SUPABASE_URL` | `https://SEU-PROJETO.supabase.co` |
-| `SUPABASE_ANON_KEY` | Chave publishable/anon |
-| `UPLOADER_EMAILS` | E-mails de quem pode importar |
-| `PORT` | `8000` |
-| `APP_ENV` | `production` — já definido no Dockerfile |
-| `MARKET_CACHE_SECONDS` | `900` |
-
-Exponha **a porta 8000 com HTTPS**. O processo escuta em `0.0.0.0:8000`. Use `/health` para verificar o serviço. O container roda com usuário sem privilégios e um worker. O banco externo mantém as planilhas entre reinícios e reimplantações. Produção recusa SQLite para evitar perda de dados no container.
-
-Abra a URL HTTPS da API e acrescente `/health`; a resposta deve conter `"status":"ok"`. Não é necessário expor PostgreSQL no JustRunMy.App.
-
-Documentação da plataforma: [Getting started](https://justrunmy.app/docs/get-started/overview) e [Networking](https://justrunmy.app/docs/concepts/networking).
+O serviço gratuito pode pausar por inatividade. O app já aguarda até 120 segundos por solicitação e informa essa possível demora. Nenhum plano pago foi contratado. As implantações continuam manuais.
 
 ## 4. Gerar o app para Mac
 
@@ -177,6 +160,6 @@ Os testes usam SQLite temporário ou `TEST_DATABASE_URL`, e nunca a variável de
 
 Verificado nesta entrega: **46 testes automatizados de backend aprovados** com SQLite/mocks, leitura das duas planilhas reais, contagens de 374/355, substituição, idempotência, proteção de upload, conflitos e casos de fronteira das regras. Também foram conferidos as contagens, RLS, políticas, permissões e endpoints HTTP no Supabase real. Foram consultados dados reais de B3SA3 e KNCR11: cotação, 497 pontos de histórico por ativo e tabelas de pagamentos.
 
-No GitHub Actions, **os 46 testes do backend com PostgreSQL 16, a análise Flutter, os seis testes Flutter e os builds APK/macOS passaram** na execução de validação. Os testes da nuvem usam dados fictícios. A execução local do SDK, bloqueada anteriormente pela revisão automática, não foi repetida. **Instalação em aparelhos físicos, validação visual nativa, login real e teste ponta a ponta da API publicada com PostgreSQL de produção continuam pendentes.**
+No GitHub Actions, **os 46 testes do backend com PostgreSQL 16, a análise Flutter, os seis testes Flutter e os builds APK/macOS passaram** na execução de validação. Os testes da nuvem usam dados fictícios. A execução local do SDK, bloqueada anteriormente pela revisão automática, não foi repetida. **Instalação em aparelhos físicos, validação visual nativa, login de uma conta real e importação autenticada continuam pendentes.** A API publicada foi verificada com PostgreSQL de produção: saúde, catálogo com 374 ações/355 FIIs, detalhe de ativo, respostas 401 nas importações sem login e rejeição de credenciais inválidas. B3SA3 e KNCR11 retornaram cotação, 497 pontos de histórico por ativo e tabelas de proventos, sem avisos do provedor nessa conferência.
 
-O banco Supabase já está criado e carregado. O serviço gratuito do Render também foi criado, mas não iniciou por falta da conexão privada do banco. Falta configurar essa conexão e criar a conta Auth para importação. Nenhuma senha de produção ou chave privilegiada foi incluída no código. O arquivo de configuração específico acompanha apenas a entrega privada e é ignorado pelo Git. Consulte `docs/RENDER.md` para o estado exato.
+O banco Supabase e a API gratuita do Render estão operacionais. A identidade técnica do backend foi ativada com autorização do usuário, e sua senha exclusiva foi guardada na configuração privada do Render. Nenhuma senha de produção ou chave privilegiada foi incluída no código. Falta criar a conta Auth pessoal para importar planilhas; a consulta pública já funciona sem login. Consulte `docs/RENDER.md` para repetir a verificação.

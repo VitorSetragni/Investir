@@ -1,12 +1,12 @@
 # Publicar a API no Render
 
-Atualizado em 28/10/2026. O código foi publicado com autorização do usuário em `VitorSetragni/Investir`. O serviço **investir-api** já foi criado no workspace confirmado, no plano **Free**, região Virginia. **Ainda não está operacional:** a inicialização parou porque `DATABASE_URL` não foi configurada.
+Atualizado em 28/10/2026. O código foi publicado com autorização do usuário em `VitorSetragni/Investir`. O serviço **investir-api** já foi criado no workspace confirmado, no plano **Free**, região Virginia. **Operacional:** a conexão privada foi configurada com autorização do usuário, e o deploy `dep-dbguvhnf3r2c73anch70`, do commit `a56381034dab956ce1934e87ad62cdf3da9b05cb`, terminou como **Live** em 28/10/2026. A verificação pública confirmou saúde, catálogo com 729 ativos e detalhe de ativo.
 
 [Painel do serviço](https://dashboard.render.com/web/srv-dbgui2flk1mc739gob5g). Endereço atribuído: `https://investir-api.onrender.com`. Não crie outro serviço com o mesmo propósito.
 
 ## Configuração incluída
 
-O arquivo `render.yaml`, na raiz, define um único Web Service Docker no plano **Free**, região Virginia, com verificação `/health`. O contexto de build é `backend/`; o Dockerfile já escuta em `0.0.0.0` e usa a variável `PORT`. As atualizações ficam manuais (`autoDeployTrigger: off`) até a validação da primeira publicação.
+O arquivo `render.yaml`, na raiz, define um único Web Service Docker no plano **Free**, região Virginia, com verificação `/health`. O contexto de build é `backend/`; o Dockerfile já escuta em `0.0.0.0` e usa a variável `PORT`. O Blueprint define `/health`; o serviço criado diretamente pelo conector usa a verificação TCP padrão do Render. O endpoint `/health` foi testado separadamente e consulta o banco. As atualizações ficam manuais (`autoDeployTrigger: off`) até a validação da primeira publicação.
 
 Não é criado outro banco. Os 729 ativos continuam no Supabase existente, fora do disco temporário do Render. Não execute uma nova carga inicial nem altere as regras de RLS para fazer o deploy.
 
@@ -14,7 +14,7 @@ Não é criado outro banco. Os 729 ativos continuam no Supabase existente, fora 
 
 1. O repositório próprio já foi criado: `VitorSetragni/Investir`. Preserve `.github/` ao publicar o código. As planilhas originais e `backend/.env.supabase.example` foram adicionadas ao `.gitignore` e não entram no envio público. O repositório `Carteira_investimento` contém outro aplicativo e não foi alterado.
 2. O serviço existente foi criado diretamente pelo conector, com o Dockerfile e contexto descritos no Blueprint. Use seu painel para configuração. O Blueprint fica como referência para uma instalação futura; não o sincronize criando um recurso duplicado.
-3. `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `UPLOADER_EMAILS`, porta e ambiente já foram configurados. Falta `DATABASE_URL`. A senha deve ser guardada somente na hospedagem, sem aparecer em código ou conversa.
+3. `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `UPLOADER_EMAILS`, porta e ambiente estão configurados. A senha exclusiva da conexão foi guardada somente na configuração privada da hospedagem, sem ser incluída em código, arquivos ou conversa.
 
 | Variável solicitada | Origem |
 |---|---|
@@ -24,7 +24,7 @@ Não é criado outro banco. Os 729 ativos continuam no Supabase existente, fora 
 
 O backend aceita `postgresql://` e o converte para o driver psycopg. A conexão Session pooler atende hospedagens IPv4. **Copie o host exato do painel Supabase → Connect → Session pooler; ele não pode ser deduzido apenas pela região.** Para solicitar ajuda, informe apenas o domínio do host, sem usuário ou senha. Não use a chave `service_role` nem coloque `DATABASE_URL` no Flutter.
 
-A identidade `investir_backend` foi criada com permissão de leitura/escrita apenas nas três tabelas do aplicativo, sem ser superusuário, sem poder criar objetos e sem bypass de RLS. Sua política específica permite essas operações; os clientes `anon` e `authenticated` continuam bloqueados. O papel permanece **NOLOGIN**, sem senha definida, até a configuração da implantação. Ao ativá-lo, use o usuário `investir_backend.PROJECT_REF` na conexão do pooler e armazene a nova senha exclusivamente no Render.
+A identidade `investir_backend` foi criada com permissão de leitura/escrita apenas nas três tabelas do aplicativo, sem ser superusuário, sem poder criar objetos e sem bypass de RLS. Sua política específica permite essas operações; os clientes `anon` e `authenticated` continuam bloqueados. O papel foi ativado com **LOGIN** e senha exclusiva, mantendo suas permissões restritas e o RLS. O host do Session pooler foi confirmado no painel do projeto: `aws-1-sa-east-1.pooler.supabase.com`, porta `5432`. A conexão usa `investir_backend.stnckjpqjebsftcnlywu` e TLS; sua senha fica exclusivamente na configuração privada do Render.
 
 Se o painel pedir configuração manual: **runtime Docker**, Dockerfile `backend/Dockerfile`, contexto `backend`, health check `/health`, plano Free; copie as variáveis do Blueprint para o formulário.
 
@@ -32,15 +32,15 @@ Se o painel pedir configuração manual: **runtime Docker**, Dockerfile `backend
 
 O projeto Supabase `investir` estava ativo, com 374 ações, 355 FIIs e **zero contas Auth** na conferência de 28/10/2026. A conta de administração do Supabase não é a conta de login do aplicativo. É necessário criar a conta em **Authentication → Users**, confirmar seu e-mail e incluí-lo em `UPLOADER_EMAILS`.
 
-Depois que o Render informar **Live**, use a URL HTTPS exata retornada:
+Para repetir a verificação da implantação já operacional, use:
 
 ```bash
-python3 scripts/check-server.py https://SUA-API.onrender.com
+python3 scripts/check-server.py https://investir-api.onrender.com
 ```
 
 O verificador faz apenas consultas públicas: saúde, catálogo, competências e detalhes de um ativo. Não importa planilhas, não altera dados e não exige senha. O login, a importação autorizada e a instalação em aparelhos devem ser verificados separadamente.
 
-Os aplicativos agora usam por padrão `https://investir-api.onrender.com`, sem exigir configuração do endereço na primeira abertura. O endereço pode ser alterado em **Servidor**. As compilações de Android e macOS passaram na execução de validação; a disponibilidade real da API continua dependendo da configuração acima.
+Os aplicativos agora usam por padrão `https://investir-api.onrender.com`, sem exigir configuração do endereço na primeira abertura. O endereço pode ser alterado em **Servidor**. As compilações de Android e macOS passaram na execução de validação, e a API padrão já está operacional. A instalação nos aparelhos físicos e o login real devem ser verificados separadamente.
 
 ## Primeiro acesso e limites
 
@@ -54,6 +54,6 @@ Referências: [Blueprint](https://render.com/docs/blueprint-spec), [FastAPI](htt
 
 Sintaxe YAML, caminhos do Dockerfile/contexto e variáveis solicitadas foram conferidos. O verificador público passou por cinco cenários simulados: catálogo consistente, modo demonstração, tickers duplicados, contagem divergente e falha de rede. Nenhum deles acessa produção.
 
-Análise Flutter, seis testes Flutter e builds de Android/macOS passaram no GitHub Actions. O SDK local bloqueado anteriormente não foi executado novamente. A instalação nos aparelhos físicos, o login real e o verificador contra uma API operacional continuam pendentes.
+Análise Flutter, seis testes Flutter e builds de Android/macOS passaram no GitHub Actions. O verificador público passou contra a API operacional: 355 FIIs e 374 ações, ambos da competência 2026-10, sem tickers duplicados e com detalhe de AALR3 disponível. A instalação nos aparelhos físicos, o login de uma conta real e a importação autenticada continuam pendentes.
 
-Os **46 testes de backend passaram novamente** com as planilhas originais e, separadamente, com os dados fictícios usados na CI pública. Foram verificadas novamente as políticas RLS, a ausência de acesso direto dos clientes e a análise de segurança do Supabase, que não apresentou avisos. Isso ainda não substitui a verificação de um backend publicado com conexão PostgreSQL.
+Os **46 testes de backend passaram novamente** com as planilhas originais e, separadamente, com os dados fictícios usados na CI pública. Foram verificadas novamente as políticas RLS, a ausência de acesso direto dos clientes e a análise de segurança do Supabase, que não apresentou avisos. A API publicada foi verificada com essa conexão PostgreSQL. As rotas de revisão e substituição responderam 401 sem login, com `Cache-Control: no-store`; credenciais fictícias também foram recusadas com 401. B3SA3 e KNCR11 retornaram cotação, 497 pontos de histórico cada e 11/12 registros de proventos, respectivamente, sem avisos nessa conferência. Esses resultados descrevem a verificação de 28/10/2026; dados de mercado podem mudar.

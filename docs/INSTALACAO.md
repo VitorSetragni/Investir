@@ -6,7 +6,7 @@ Os instaladores são gerados pelo GitHub Actions e disponibilizados como arquivo
 - Mac: extraia `Investir-macOS.zip` e mova `Investir.app` para Aplicativos.
 - O servidor padrão é `https://investir-api.onrender.com` e pode ser alterado em **Servidor**.
 
-A implantação do servidor ainda precisa receber a conexão privada do banco para ficar operacional. O download dos instaladores não comprova que o backend já esteja disponível.
+O servidor padrão já está operacional e conectado ao Supabase, com 374 ações e 355 FIIs da base de outubro/2026. A consulta pública funciona sem login. Para importar planilhas, crie a conta Auth autorizada conforme [SUPABASE_PRONTO.md](SUPABASE_PRONTO.md).
 
 A versão Mac usa assinatura local, sem notarização Apple, e pode exigir liberação em Privacidade e Segurança na primeira abertura. O APK usa a assinatura de teste do SDK enquanto não for configurada uma chave de distribuição persistente.
 
