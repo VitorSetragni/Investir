@@ -1,6 +1,6 @@
 # Banco preparado em 27/10/2026
 
-**Atualização de 28/10/2026:** a alternativa de hospedagem no Render está preparada em [RENDER.md](RENDER.md). O projeto Supabase continua ativo com os 729 registros e ainda não tem contas Auth. O serviço Render não foi criado nesta etapa; a configuração está pronta para publicação.
+**Atualização de 28/10/2026:** o serviço gratuito do Render foi criado e as compilações Android/macOS passaram. O projeto Supabase continua ativo com os 729 registros e ainda não tem contas Auth. A identidade exclusiva `investir_backend` foi criada com RLS e permanece sem login. Falta o host exato do Session pooler para ativar a conexão privada. Consulte [RENDER.md](RENDER.md); a API ainda não está operacional.
 
 O projeto **investir** já foi criado na organização escolhida, na região **São Paulo (`sa-east-1`)**. O custo informado pelo conector para sua criação foi **US$ 0 por mês**.
 

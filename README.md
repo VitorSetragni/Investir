@@ -4,7 +4,7 @@ Aplicativo para macOS e Android, backend FastAPI e banco PostgreSQL no Supabase 
 
 **Atualização de 27/10/2026:** o banco Supabase já foi criado na sua conta e recebeu os 729 ativos. Veja [o que está pronto e os três passos restantes](docs/SUPABASE_PRONTO.md). A configuração real publicável está em `backend/.env.supabase.example`, sem senha do banco.
 
-**Atualização de 28/10/2026:** alternativa de hospedagem no Render preparada em [docs/RENDER.md](docs/RENDER.md), com `render.yaml` no plano Free, verificador público da API e espera de até 120 segundos no app para o servidor reativar. O conector Render está disponível e o workspace foi confirmado. Backend e instaladores ainda não foram publicados.
+**Atualização de 28/10/2026:** o código está publicado neste repositório. As compilações de Android e Mac passaram com PostgreSQL e testes de interface na [execução de validação](https://github.com/VitorSetragni/Investir/actions/runs/40685836185). O serviço `investir-api` foi criado no Render no plano Free, mas ainda depende da conexão privada do banco para funcionar. Veja [docs/RENDER.md](docs/RENDER.md).
 
 ## O que está implementado
 
@@ -16,7 +16,7 @@ Aplicativo para macOS e Android, backend FastAPI e banco PostgreSQL no Supabase 
 - Detalhes com gráfico de até dois anos, preço e horário da cotação, último pagamento por cota, frequência e dia habituais quando o histórico permite.
 - Evidências documentais registradas por usuário autorizado. São descartadas quando a planilha correspondente é substituída.
 
-**Este pacote contém o código-fonte e os scripts de compilação. Não contém APK nem aplicativo macOS já compilados.** A compilação nativa e os testes de interface ficaram pendentes neste ambiente. As etapas abaixo e o workflow incluído geram esses arquivos no seu computador ou no GitHub Actions.
+**Este repositório contém o código-fonte e os scripts de compilação.** Os instaladores são disponibilizados como arquivos após uma compilação aprovada. Eles incluem o endereço do servidor; a configuração pode ser alterada em **Servidor** no aplicativo. A disponibilidade do backend é verificada separadamente da compilação nativa. Veja [como instalar](docs/INSTALACAO.md).
 
 ## 1. Testar o backend localmente com suas planilhas
 
@@ -124,7 +124,7 @@ Guarde o keystore e a senha. Os arquivos são ignorados pelo Git. Para publicar 
 
 ## 6. Gerar os dois aplicativos pelo GitHub Actions
 
-O arquivo `.github/workflows/build.yml` está incluído; nenhum repositório foi criado nem workflow executado por esta entrega.
+O código está em `VitorSetragni/Investir`. O workflow `.github/workflows/build.yml` já executou com sucesso os testes PostgreSQL, análise e testes Flutter e os builds nativos. Os arquivos ficam nos artifacts da execução por 14 dias e podem ser baixados para entrega. O workflow mantém `contents: read`; não publica Releases automaticamente.
 
 1. Envie esta pasta a um repositório seu, preservando `.github/`.
 2. Abra **Actions → Testar e gerar aplicativos → Run workflow**.
@@ -177,6 +177,6 @@ Os testes usam SQLite temporário ou `TEST_DATABASE_URL`, e nunca a variável de
 
 Verificado nesta entrega: **46 testes automatizados de backend aprovados** com SQLite/mocks, leitura das duas planilhas reais, contagens de 374/355, substituição, idempotência, proteção de upload, conflitos e casos de fronteira das regras. Também foram conferidos as contagens, RLS, políticas, permissões e endpoints HTTP no Supabase real. Foram consultados dados reais de B3SA3 e KNCR11: cotação, 497 pontos de histórico por ativo e tabelas de pagamentos.
 
-O código Dart passou pela análise sintática do formatador. **`flutter analyze`, testes de widgets, builds APK/macOS, validação visual em tela, instalação Android/macOS e teste ponta a ponta do FastAPI publicado no JustRunMy.App com conexão PostgreSQL não foram executados.** As verificações SQL e HTTP no projeto Supabase foram realizadas separadamente. A revisão automática deste ambiente bloqueou o Flutter ao tentar acessar um endpoint interno de metadados. Os testes de interface estão em `frontend/test` e o workflow os executa antes de gerar os binários.
+No GitHub Actions, **os 46 testes do backend com PostgreSQL 16, a análise Flutter, os seis testes Flutter e os builds APK/macOS passaram** na execução de validação. Os testes da nuvem usam dados fictícios. A execução local do SDK, bloqueada anteriormente pela revisão automática, não foi repetida. **Instalação em aparelhos físicos, validação visual nativa, login real e teste ponta a ponta da API publicada com PostgreSQL de produção continuam pendentes.**
 
-O banco Supabase já está criado e carregado, e o serviço Auth foi consultado. Ainda faltam definir a conexão privada do banco, criar a conta Auth para importação e publicar o servidor no JustRunMy.App. Nenhuma senha de banco ou chave privilegiada foi incluída. O arquivo específico contém somente uma chave publicável. O servidor FastAPI e os aplicativos não foram publicados.
+O banco Supabase já está criado e carregado. O serviço gratuito do Render também foi criado, mas não iniciou por falta da conexão privada do banco. Falta configurar essa conexão e criar a conta Auth para importação. Nenhuma senha de produção ou chave privilegiada foi incluída no código. O arquivo de configuração específico acompanha apenas a entrega privada e é ignorado pelo Git. Consulte `docs/RENDER.md` para o estado exato.

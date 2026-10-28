@@ -3,7 +3,7 @@ set -euo pipefail
 project_dir="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$project_dir/frontend"
 target="${1:-macos}"
-api_url="${API_BASE_URL:-}"
+api_url="${API_BASE_URL:-https://investir-api.onrender.com}"
 python3 tool/bootstrap.py
 flutter pub get
 flutter analyze --no-fatal-infos

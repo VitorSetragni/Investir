@@ -33,4 +33,26 @@ begin
 end
 $policies$;
 revoke all on public.snapshots, public.assets, public.market_cache from anon, authenticated;
--- Backend usa a conexão Postgres do proprietário via pooler TLS.
+-- Identidade exclusiva da API. Ative LOGIN e defina a senha somente na implantação.
+do $role$
+begin
+ if not exists (select 1 from pg_roles where rolname='investir_backend') then
+  create role investir_backend nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+ end if;
+end
+$role$;
+grant usage on schema public to investir_backend;
+grant select, insert, update, delete on public.assets, public.snapshots, public.market_cache to investir_backend;
+alter role investir_backend set search_path = pg_catalog, public;
+alter role investir_backend set statement_timeout = '30s';
+alter role investir_backend set idle_in_transaction_session_timeout = '60s';
+do $policies$
+declare table_name text;
+begin
+ foreach table_name in array array['assets','snapshots','market_cache'] loop
+  if not exists (select 1 from pg_policies where schemaname='public' and tablename=table_name and policyname='backend_access') then
+   execute format('create policy backend_access on public.%I for all to investir_backend using (true) with check (true)',table_name);
+  end if;
+ end loop;
+end
+$policies$;
