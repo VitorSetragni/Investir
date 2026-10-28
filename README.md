@@ -134,7 +134,7 @@ Se enviar apenas ações, FIIs continuam no mês anterior. Se não enviar nada, 
 
 Isso é triagem e não uma indicação automática de compra ou cálculo de valor justo. As regras e decisões de implementação estão em `docs/REGRAS.md`.
 
-Na base enviada, há **12 ações selecionadas** (2 preferidas e 10 aceitáveis). Os FIIs possuem muitas informações incompletas de performance/regulamento; por isso ficam em **A confirmar** até conferência. O traço da planilha não é interpretado como comprovação de taxa inexistente. A lista de FIIs pode diferir da triagem exploratória anterior justamente por tornar essa pendência explícita.
+Na base enviada, há **12 ações selecionadas** (2 preferidas e 10 aceitáveis). Conforme decisão do usuário em 28/10/2026, traço na taxa de performance passa a significar **0%**, com **benchmark 0 (não aplicável)**. Com essa convenção, a base de outubro/2026 tem **13 FIIs selecionados** (7 preferidos e 6 aceitáveis); 28 continuam em **A confirmar** e 314 fora dos filtros. Campos vazios não são convertidos em zero. O ranking de administradores contém os 11 nomes do PDF fornecido; entidades sem correspondência confirmada continuam pendentes.
 
 Um usuário autorizado pode abrir um ativo e registrar a fonte oficial da conferência. Essa anotação vale só para a base atual, não é transferida automaticamente para o próximo mês e não transforma um critério efetivamente reprovado em aprovado.
 
@@ -170,4 +170,10 @@ O banco Supabase e a API gratuita do Render estão operacionais. A identidade t�
 
 O botão ao lado de Importar alterna entre modo claro e escuro, com preferência salva no aparelho. A tela Regras mostra apenas os títulos dos grupos; cada um abre seus critérios em uma página própria. Aprenda um pouco mais oferece glossário com busca, incluindo os códigos 3, 4 e 11. O detalhe de cada ativo tem um atalho para sua página no Status Invest.
 
-As referências numeradas de material didático foram substituídas por nomes dos grupos de critérios, inclusive na apresentação de avaliações já salvas. Esta atualização não reclassifica ativos nem altera os limites de triagem. A interpretação do traço em taxa de performance permanece separada para discussão com o usuário.
+As referências numeradas de material didático foram substituídas por nomes dos grupos de critérios, inclusive na apresentação de avaliações já salvas. A versão 1.1.0 preservou as classificações e os limites de triagem.
+
+## Regras 1.1.1
+
+A versão `2026.10.28.1` aplica a decisão sobre performance zero e atualiza as avaliações dos FIIs existentes em uma transação na inicialização da API. Os dados originais, as competências e as evidências autorizadas são preservados. Ações, os demais critérios e a lista de administradores permanecem iguais. A página Gestão e taxas explica que performance zero não exige benchmark.
+
+Validação local: **85 testes do backend aprovados**, incluindo valores zero e vazios, taxas positivas, preservação das evidências, reclassificação idempotente e os 11 administradores do PDF. A simulação sobre os 355 FIIs de produção confirmou 7 preferidos, 6 aceitáveis, 28 a confirmar e 314 fora, sem alteração do estado de qualquer outro critério.

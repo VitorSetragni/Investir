@@ -7,7 +7,7 @@ import html
 import re
 import unicodedata
 
-VERSION = '2026.10.27.1'
+VERSION = '2026.10.28.1'
 
 SOURCE_GROUPS = {
     '4.2': 'Sociedade', '4.3': 'Lucro', '4.4': 'Negócio',
@@ -110,6 +110,17 @@ def administrator(name):
     return 'pending','Identidade não confirmada no ranking. Não equiparar Apex/BRL Trust DTVM a BRL Trust Inv., nem BR-Capital a BRL Trust.'
 
 
+def zero_performance(value):
+    """Convenção da base: traço ou zero explícito significam taxa zero."""
+    if value is None:
+        return False
+    value = norm(html.unescape(str(value)))
+    if value in ('-', '–', '—', 'nao ha', 'nao possui', 'inexistente', 'sem taxa', 'nao'):
+        return True
+    return bool(re.fullmatch(r'[+-]?0+(?:[.,]0+)?\s*%?', value)
+                or re.match(r'^0+(?:[.,]0+)?\s*%', value))
+
+
 def fii_rules(d):
     r=[]
     def add(key,label,status,expected,chapter,note=''):
@@ -139,10 +150,10 @@ def fii_rules(d):
     fee=d['Taxa de adm']
     add('Taxa de adm','Taxa de administração','pending' if fee==0 or fee>ref else 'pass',f'Referência {ref*100:g}% a.a. (papel 1%; tijolo passivo 0,2%; ativo 2%)','5.4','Zero exige confirmação. Acima da referência exige análise, pois não foi adotado um limite numérico adicional. Não é reprovação automática.' if fee==0 or fee>ref else 'Dentro da referência. Conferir se inclui gestão, consultoria e demais custos.')
     perf=html.unescape(str(d.get('Taxa de Performance',''))).strip();np=norm(perf)
-    if np in ('nao ha','nao possui','inexistente','sem taxa','0','0%','nao'):
-        state='pass';note='Ausência expressamente informada na base; conferir regulamento vigente.'
-    elif np in ('','-','—'):
-        state='pending';note='Traço ou vazio na planilha não comprova inexistência da taxa.'
+    if zero_performance(d.get('Taxa de Performance')):
+        state='pass';note='Taxa de performance 0%. Benchmark 0 (não aplicável quando não há cobrança). Traço na base é interpretado como zero.'
+    elif np=='':
+        state='pending';note='Taxa de performance não informada. Campo vazio não foi tratado como zero.'
     elif paper or management=='passiva':
         state='fail';note='O critério exige ausência de taxa de performance para papel e gestão passiva.'
     else:
@@ -153,6 +164,8 @@ def fii_rules(d):
         elif rate is None:state='pending';note='Percentual não identificado com segurança.'
         else:state='pending';note='Percentual e IPCA identificados; ótimos resultados e fórmula completa exigem conferência do regulamento.'
     add('Taxa de Performance','Taxa de performance',state,'Papel/passivo: ausente; ativo: até 20% do excedente de IPCA+X, com ótimos resultados','5.4',note)
+    if zero_performance(d.get('Taxa de Performance')):
+        r[-1].update(value='0%',benchmark=0,source_value=d.get('Taxa de Performance'))
     return finish(r,['Triagem quantitativa, sem avaliação do preço da cota.', 'Taxas, ranking e dados ausentes podem deixar o fundo em “A confirmar”.', 'Número de negociações não foi substituído pelo volume em reais.'])
 
 
@@ -166,4 +179,25 @@ def evaluate(kind,data):
             if rule['status']!='na':
                 rule['status']='pending'
                 rule['note']='Valor ausente na planilha. Não foi tratado como zero nem como atendimento da regra.'
-    return finish(result['rules'],result['notes'])
+                rule.pop('benchmark',None)
+                rule.pop('source_value',None)
+    return apply_evidence(kind,data,finish(result['rules'],result['notes']))
+
+
+def apply_evidence(kind,data,assessment):
+    """Reaplica apenas os atestados autorizados da planilha vigente."""
+    evidence=data.get('_evidence',{})
+    performance=data.get('Taxa de Performance')
+    for rule in assessment['rules']:
+        if kind=='fiis' and rule['key']=='Taxa de Performance':
+            if evidence.get('no_performance') and (performance is None or str(performance).strip()=='' or zero_performance(performance)):
+                rule.update(status='pass',value='0%',benchmark=0,source_value=performance,
+                            note='Ausência conferida em '+evidence['no_performance']['source_url']+'. Benchmark 0 (não aplicável).')
+            if evidence.get('performance_history_verified') and rule['status']=='pending' and rule['note'].startswith('Percentual e IPCA identificados'):
+                rule.update(status='pass',note='Fórmula completa e histórico conferidos em '+evidence['performance_history_verified']['source_url'])
+        if kind=='fiis' and rule['key']=='Administrador' and rule['status']=='pending' and evidence.get('administrator_verified'):
+            rule.update(status='pass',note='Identidade conferida em '+evidence['administrator_verified']['source_url'])
+    result=finish(assessment['rules'],assessment['notes'])
+    if kind=='stocks' and evidence.get('profit_verified'):
+        result['notes'].append('Série de lucro conferida pelo responsável: '+evidence['profit_verified']['source_url'])
+    return result

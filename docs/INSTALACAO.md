@@ -1,6 +1,6 @@
 # Instalar os aplicativos
 
-Versão **1.1.0 (build 2)**. O botão de aparência alterna o tema e lembra sua escolha.
+Versão **1.1.1 (build 3)**. O botão de aparência alterna o tema e lembra sua escolha. A página Gestão e taxas explica a convenção de performance zero.
 
 Os instaladores são gerados pelo GitHub Actions e disponibilizados como arquivos para download. Não há publicação automática em Releases nem permissão de escrita adicional na CI.
 
@@ -12,7 +12,7 @@ O servidor padrão já está operacional e conectado ao Supabase, com 374 açõe
 
 A versão Mac usa assinatura local, sem notarização Apple, e pode exigir liberação em Privacidade e Segurança na primeira abertura. O APK usa a assinatura de teste do SDK enquanto não for configurada uma chave de distribuição persistente.
 
-A chave Android desta compilação difere da entrega 1.0.0. Se aquela versão estiver instalada, desinstale-a antes de instalar o APK 1.1.0. A sessão e as preferências locais serão apagadas; o catálogo e as planilhas da base central permanecem preservados. Para permitir atualizações futuras sobre a mesma instalação, configure uma chave persistente conforme o README.
+Sem uma chave Android persistente, cada compilação pode ter uma assinatura de teste diferente. Se o Android recusar a atualização, desinstale a versão anterior antes de instalar o APK 1.1.1. A sessão e as preferências locais serão apagadas; o catálogo e as planilhas da base central permanecem preservados. Para permitir atualizações futuras sobre a mesma instalação, configure uma chave persistente conforme o README.
 
 As compilações executam testes do backend com PostgreSQL, análise Flutter e testes da interface. A instalação nos aparelhos físicos e o login real precisam ser conferidos separadamente.
 

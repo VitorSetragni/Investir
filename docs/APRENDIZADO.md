@@ -20,4 +20,4 @@ Links de destino conferidos:
 - https://statusinvest.com.br/fundos-imobiliarios/brco11
 - https://statusinvest.com.br/fundos-imobiliarios/ggrc11
 
-Campos e classificações de performance continuam usando a regra vigente até a conclusão da discussão sobre o traço da planilha. Não houve aprovação automática nem reclassificação da base nesta atualização.
+Na versão 1.1.1, conforme decisão do usuário em 28/10/2026, traço na taxa de performance significa 0%, com benchmark 0 (não aplicável). Campo vazio permanece a confirmar. A definição financeira do glossário continua válida; a convenção da planilha está explicada na página Gestão e taxas. O ranking de administradores continua contendo os 11 nomes do PDF, sem inclusão automática de entidades com nomes parecidos.

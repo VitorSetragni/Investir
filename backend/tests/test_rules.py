@@ -34,9 +34,38 @@ def test_paper_fee_reference_not_strict_cap(records,fee,expected):
     d=fund(records);d['Taxa de adm']=fee;assert state(evaluate('fiis',d),'Taxa de adm')==expected
 
 
-def test_missing_performance_never_proves_absence(records):
-    d=fund(records);d['Taxa de Performance']='-';assert state(evaluate('fiis',d),'Taxa de Performance')=='pending'
-    d['Taxa de Performance']='20% do excedente do CDI';assert state(evaluate('fiis',d),'Taxa de Performance')=='fail'
+@pytest.mark.parametrize('value',['-', '–', '—', 0, 0.0, '0', '0,00%', '0.0%', '0% do excedente do CDI', 'Não há'])
+@pytest.mark.parametrize('kind,management',[('Papel','Ativa'),('Tijolo','Ativa'),('Tijolo','Passiva')])
+def test_zero_performance_requires_no_benchmark(records,value,kind,management):
+    d=fund(records);d.update({'Tipo de fundo':kind,'Tipo de Gestão':management,'Taxa de Performance':value})
+    before=deepcopy(d)
+    rule=next(r for r in evaluate('fiis',d)['rules'] if r['key']=='Taxa de Performance')
+    assert rule['status']=='pass'
+    assert rule['value']=='0%' and rule['benchmark']==0
+    assert rule['source_value']==value
+    assert d==before
+
+
+@pytest.mark.parametrize('value',[None,'','  '])
+def test_blank_performance_remains_unknown(records,value):
+    d=fund(records);d['Taxa de Performance']=value
+    rule=next(r for r in evaluate('fiis',d)['rules'] if r['key']=='Taxa de Performance')
+    assert rule['status']=='pending'
+    assert 'benchmark' not in rule
+
+
+@pytest.mark.parametrize('value',['0,5% do CDI','20% do excedente do CDI'])
+def test_nonzero_performance_remains_prohibited_for_paper(records,value):
+    d=fund(records);d['Taxa de Performance']=value
+    assert state(evaluate('fiis',d),'Taxa de Performance')=='fail'
+
+
+def test_charged_performance_still_requires_benchmark(records):
+    d=fund(records);d.update({'Tipo de fundo':'Tijolo','Tipo de Gestão':'Ativa','Taxa de Performance':'20% do excedente do CDI'})
+    rule=next(r for r in evaluate('fiis',d)['rules'] if r['key']=='Taxa de Performance')
+    assert rule['status']=='pending'
+    assert 'Benchmark IPCA+X' in rule['note']
+    assert 'benchmark' not in rule
 
 
 @pytest.mark.parametrize('v,expected',[(.2499,'pass'),(.25,'acceptable'),(.30,'acceptable'),(.3001,'fail')])
@@ -55,3 +84,11 @@ def test_different_admin_entities_are_not_equated():
     assert administrator('BR-Capital Dist. de Títulos')[0]=='pending'
     assert administrator('Apex Group DTVM')[0]=='pending'
     assert administrator('Banco Genial S.A.')[0]=='pass'
+
+
+def test_all_eleven_administrators_from_supplied_ranking_are_present():
+    names=['Banco Genial','Intrag DTVM','Banco Fator','BRL Trust Inv.',
+           'XP Investimentos','Coinvalores','Rio Bravo','BTG Pactual',
+           'Votorantim Asset','CM Capital Markets','Safra Asset Management']
+    assert len(names)==11
+    assert all(administrator(name)[0]=='pass' for name in names)

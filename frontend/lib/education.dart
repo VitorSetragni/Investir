@@ -48,7 +48,7 @@ const ruleSections = [
     RuleEntry('Administrador', 'A comparação usa o ranking de administradores adotado na triagem. Banco Genial e Intrag estão no primeiro grupo; Banco Fator e BRL Trust Inv. no segundo; XP no terceiro. Outras entidades viáveis do ranking são Coinvalores, Rio Bravo, BTG Pactual, Votorantim Asset, CM Capital e Safra. Nomes parecidos não comprovam que se trata da mesma entidade.'),
     RuleEntry('Gestão ativa ou passiva', 'É necessário identificar o mandato do fundo. O rótulo “gestão definida” não significa automaticamente gestão passiva e exige conferir o regulamento.'),
     RuleEntry('Taxa de administração', 'Referências anuais: papel, 1%; tijolo passivo, 0,2%; tijolo ativo, 2%. Acima da referência fica a confirmar, pois não foi adotado um limite numérico adicional. Valor zero também exige conferência.'),
-    RuleEntry('Taxa de performance', 'Papel e tijolo passivo: ausência de taxa. Tijolo ativo: até 20% do excedente de IPCA+X, com fórmula completa e ótimos resultados conferidos. Sem indicação explícita de ausência de taxa, ou com informação ambígua, o critério fica a confirmar.'),
+    RuleEntry('Taxa de performance', 'Papel e tijolo passivo: ausência de taxa. Tijolo ativo: até 20% do excedente de IPCA+X, com fórmula completa e ótimos resultados conferidos. Nesta triagem, traço e zero explícito significam taxa de 0% e benchmark 0 (não aplicável). Campo vazio permanece a confirmar. A exigência de benchmark é mantida quando há cobrança.'),
     RuleEntry('Número de negociações', 'A referência é de 7 mil negócios por dia. A planilha informa volume em reais, que não substitui a quantidade de negócios; por isso esse critério não é considerado comprovado por essa coluna.'),
   ]),
 ];

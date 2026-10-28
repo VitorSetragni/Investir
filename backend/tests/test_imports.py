@@ -78,6 +78,16 @@ def test_unknown_ticker_no_arbitrary_market_request(client):
 
 
 def test_documentary_evidence_is_tied_to_current_snapshot(authorized,files):
+    # Um campo realmente vazio continua pendente; traço agora significa taxa zero.
+    from openpyxl import load_workbook
+    import io
+    book=load_workbook(io.BytesIO(files['fiis']))
+    sheet=book['Método Davi']
+    headers=[cell.value for cell in sheet[3]]
+    for row in sheet.iter_rows(min_row=4):
+        if row[0].value=='KNIP11':row[headers.index('Taxa de Performance')].value=None
+    stream=io.BytesIO();book.save(stream);book.close()
+    files={**files,'fiis':stream.getvalue()}
     send(authorized,files['fiis'],'fiis')
     body={'key':'no_performance','source_url':'https://www.kinea.com.br/fundos/','checked_date':'2026-10-01','note':'Regulamento consultado confirma ausência de taxa de performance.'}
     r=authorized.post('/api/assets/KNIP11/evidence',json=body);assert r.status_code==200

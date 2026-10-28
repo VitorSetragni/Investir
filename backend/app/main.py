@@ -20,6 +20,7 @@ from .database import initialize, session, Asset, Snapshot, MarketCache
 from .importer import parse_workbook, replace_snapshot, ImportErrorDetail
 from .market import fetch_market
 from .rules import VERSION, evaluate, present_assessment
+from .reassessment import refresh_rule_assessments
 
 logger=logging.getLogger('investir')
 
@@ -27,10 +28,12 @@ logger=logging.getLogger('investir')
 @asynccontextmanager
 async def lifespan(app):
     await run_in_threadpool(initialize)
+    updated=await run_in_threadpool(refresh_rule_assessments)
+    logger.info('Avaliações de FIIs atualizadas para %s: %d',VERSION,updated)
     yield
 
 
-app=FastAPI(title='Investir — API',version='1.1.0',lifespan=lifespan)
+app=FastAPI(title='Investir — API',version='1.1.1',lifespan=lifespan)
 origins=[x.strip() for x in settings().allowed_origins.split(',') if x.strip()]
 app.add_middleware(CORSMiddleware,allow_origins=origins,allow_credentials=False,allow_methods=['GET','POST'],allow_headers=['Authorization','Content-Type'])
 
@@ -225,19 +228,5 @@ def evidence(ticker:str,body:EvidenceInput,user=Depends(require_uploader),db:Ses
     if body.key!='profit_verified' and a.kind!='fiis':raise HTTPException(422,'Evidência exclusiva de FIIs.')
     data=dict(a.data);ev=dict(data.get('_evidence',{}));ev[body.key]=dict(body.model_dump(),checked_by=user['id']);data['_evidence']=ev
     assessment=evaluate(a.kind,data)
-    # Reaplicar atestados anteriores, todos pertencentes à mesma planilha.
-    from .rules import finish
-    if ev.get('no_performance'):
-        for rule in assessment['rules']:
-            if rule['key']=='Taxa de Performance' and str(data.get('Taxa de Performance','')).strip() in ('','-','—'):rule.update(status='pass',note='Ausência conferida em '+ev['no_performance']['source_url'])
-    if ev.get('administrator_verified'):
-        for rule in assessment['rules']:
-            if rule['key']=='Administrador' and rule['status']=='pending':rule.update(status='pass',note='Identidade conferida em '+ev['administrator_verified']['source_url'])
-    if ev.get('performance_history_verified'):
-        for rule in assessment['rules']:
-            if rule['key']=='Taxa de Performance' and rule['status']=='pending' and rule['note'].startswith('Percentual e IPCA identificados'):
-                rule.update(status='pass',note='Fórmula completa e histórico conferidos em '+ev['performance_history_verified']['source_url'])
-    assessment=finish(assessment['rules'],assessment['notes'])
-    if ev.get('profit_verified'):assessment['notes'].append('Série de lucro conferida pelo responsável: '+ev['profit_verified']['source_url'])
     a.data=data;a.assessment=assessment;db.commit()
     return {'ok':True,'assessment':assessment}

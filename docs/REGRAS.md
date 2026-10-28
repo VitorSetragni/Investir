@@ -58,6 +58,8 @@ A vacância financeira é priorizada quando disponível. A planilha não identif
 
 ### Administradores
 
+O PDF fornecido contém **11 nomes** (2 no primeiro grupo, 2 no segundo, 1 no terceiro e 6 outros viáveis). Todos estão contemplados no cadastro; XP Inv. é reconhecida pelo nome XP Investimentos usado na planilha.
+
 - Primeiro grupo: Banco Genial e Intrag.
 - Segundo: Banco Fator e BRL Trust **Inv.**
 - Terceiro: XP.
@@ -73,9 +75,13 @@ Não equiparar automaticamente BR-Capital, Apex Group, BRL Trust DTVM e BRL Trus
 | Tijolo passivo | Referência próxima de 0,2% a.a. | Inexistente |
 | Tijolo ativo | Referência próxima de **2% a.a.** | Até 20% do excedente de IPCA+X, somente com ótimos resultados |
 
-A referência de **2%** para tijolo ativo foi definida pelo usuário. Não foi adotada uma tolerância numérica adicional acima das referências de taxas. Acima da referência fica a confirmar. Taxa zero, traço e fórmula truncada também exigem conferência. “Gestão definida” não é sinônimo automático de passiva; exige verificar o mandato.
+A referência de **2%** para tijolo ativo foi definida pelo usuário. Não foi adotada uma tolerância numérica adicional acima das referências de taxas. Administração acima da referência ou igual a zero fica a confirmar. “Gestão definida” não é sinônimo automático de passiva; exige verificar o mandato.
 
-Para papel/passivo, performance expressamente presente reprova. Para tijolo ativo, performance >20% reprova; identificação de IPCA e percentual ≤20% ainda depende de verificar fórmula e histórico. Traço não significa “Não há”.
+Em **28/10/2026**, o usuário definiu a convenção de performance: **traço (`-`, `–` ou `—`) significa taxa 0%; quando a taxa é zero, o benchmark é 0 e não se aplica exigência de benchmark ou histórico de cobrança**. Zero numérico, percentual zero e ausência expressamente informada recebem o mesmo tratamento. A avaliação mostra `0%`, registra `benchmark: 0` e conserva o valor original da planilha. Campos vazios ou ausentes continuam a confirmar.
+
+Para papel/passivo, performance maior que zero reprova. Para tijolo ativo, performance >20% reprova; identificação de IPCA e percentual positivo ≤20% ainda depende de verificar fórmula e histórico. A convenção do traço vale exclusivamente para a taxa de performance, sem alterar outros campos.
+
+A versão de regras `2026.10.28.1` recalcula as avaliações de FIIs existentes na inicialização da API, em uma transação com o mesmo bloqueio usado pela importação. São preservados os dados originais, as evidências autorizadas, as competências e os metadados das planilhas. Ações e a lista de administradores não são alteradas.
 
 ## Evidências
 
