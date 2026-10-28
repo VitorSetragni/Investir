@@ -82,7 +82,9 @@ Resultado esperado: `dist/Investir-macOS.zip`, contendo `Investir.app`. O endere
 API_BASE_URL=https://SUA-API.justrunmy.app bash scripts/build.sh macos
 ```
 
-Esta compilação não faz assinatura de distribuição Apple nem notarização. Para distribuir a terceiros sem o aviso do Gatekeeper, use sua conta Apple Developer e siga a [documentação de publicação macOS](https://docs.flutter.dev/deployment/macos). Para uso próprio no Mac, a abertura de uma compilação local pode exigir **Abrir** pelo menu de contexto.
+Esta compilação não faz assinatura de distribuição Apple nem notarização. Para distribuir a terceiros sem o aviso do Gatekeeper, use sua conta Apple Developer e siga a [documentação de publicação macOS](https://docs.flutter.dev/deployment/macos). Para uso próprio, depois de tentar abrir, a compilação local pode exigir **Ajustes do Sistema → Privacidade e Segurança → Abrir Mesmo Assim**.
+
+O build local usa o Chaves clássico do macOS e não declara Keychain Sharing, pois `keychain-access-groups` exige provisionamento Apple e bloqueia a abertura com assinatura ad hoc. Depois de criar o ZIP, `scripts/check-macos.py` extrai o pacote, verifica a assinatura e as arquiteturas e inicia o executável por 20 segundos. No GitHub Actions, há também um teste nativo de gravação, leitura, atualização e exclusão no Chaves.
 
 ## 5. Gerar o APK para Android atual
 
@@ -185,3 +187,9 @@ A versão foi implantada no Render gratuito e verificada pela API e no banco: **
 Somente no modo escuro, o rodapé de navegação usa explicitamente o fundo azul-escuro dos painéis, o verde-menta na seleção e a cor secundária do aplicativo nos demais destinos. A paleta e a configuração do modo claro permanecem iguais. As regras, os dados e o servidor não foram alterados nesta versão.
 
 A [execução 9](https://github.com/VitorSetragni/Investir/actions/runs/40713947453), no commit `5bec4a2`, aprovou os 85 testes do backend, os 11 testes Flutter em cada plataforma e os dois builds. O executor Mac passou a ser o padrão `macos-15-intel`, gratuito para repositórios públicos conforme a [referência do GitHub](https://docs.github.com/en/actions/reference/runners/github-hosted-runners). Foram conferidos integridade, versão 1.1.2/build 4, endereço da API, alinhamento Android de 16 KB e arquiteturas Intel/Apple Silicon em todos os oito binários nativos do Mac. O APK usa assinatura de teste diferente da versão 1.1.1; consulte as instruções de instalação.
+
+## Abertura no macOS 1.1.3
+
+A versão 1.1.3/build 5 corrige a configuração que impedia a abertura da entrega com assinatura local: remove Keychain Sharing, inclusive de projetos já gerados, e configura o armazenamento de sessões no Chaves clássico do macOS. Temas, regras e servidor mantêm o comportamento anterior.
+
+A [execução 10](https://github.com/VitorSetragni/Investir/actions/runs/40759961205), no commit `8eafd5e`, passou nos 85 testes do backend e nos 11 testes Flutter por plataforma. O pacote Mac extraído passou na verificação estrita de assinatura, nas duas arquiteturas dos oito binários e no teste de inicialização de 20 segundos. Um teste nativo adicional gravou, leu, atualizou e excluiu um registro no Chaves usando a configuração do aplicativo. Esses testes foram executados no runner Intel; a instalação física em Apple Silicon precisa ser conferida no aparelho. Veja [as instruções de substituição](docs/INSTALACAO.md).
